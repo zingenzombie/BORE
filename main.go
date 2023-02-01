@@ -39,12 +39,25 @@ func GetOutboundIP() net.IP {
 	return localAddr.IP
 }
 
-type CounterHandler struct {
-	counter int
+// Structure for a user's address and string.
+type connectedDevice struct {
+	ip   string
+	name string
 }
 
+// Structure for the series of rooms that hold users.
+type CounterHandler struct {
+	counter       int
+	connectedDevs map[string]*connectedDevice
+}
+
+// Responds to all HTTP requests.
 func (ct *CounterHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(ct.counter)
 	ct.counter++
+
+	//THIS NEEDS TO BE CHANGED AS IT WILL SIMPLY CHECK FOR THE FRONT END'S ADDRESS AND STORE THAT AS A USER
+	fmt.Fprintln(w, "Hello ", r.RemoteAddr)
+
 	fmt.Fprintln(w, "Counter:", ct.counter)
 }
