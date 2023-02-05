@@ -61,3 +61,14 @@ func (ct *CounterHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintln(w, "Counter:", ct.counter)
 }
+
+// Saving display name from form entry
+func displayName(w http.ResponseWriter, r *http.Request) {
+	connectedDev := connectedDevice{
+		string(GetOutboundIP()), 
+		r.FormValue("name"),
+	}
+	// need to store information in some way
+	_ = connectedDev
+
+}
