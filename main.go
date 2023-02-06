@@ -51,10 +51,15 @@ type connectedDevice struct {
 	name string
 }
 
+type Room struct {
+	connectedDevs map[string]*connectedDevice
+}
+
 // Structure for the series of rooms that hold users.
 type RoomAndNames struct {
 	counter       int
 	connectedDevs map[string]*connectedDevice
+	rooms         []Room
 }
 
 // Responds to HTTP /count request.
@@ -81,13 +86,25 @@ func newUser(roomAndNames *RoomAndNames, r *http.Request) {
 	roomAndNames.connectedDevs[r.RemoteAddr] = &connectedDevice{ip: r.RemoteAddr, name: ""}
 }
 
-// Saving display name from form entry
-func displayName(w http.ResponseWriter, r *http.Request) {
-	connectedDev := connectedDevice{
-		string(GetOutboundIP()),
-		r.FormValue("name"),
-	}
-	// need to store information in some way
-	_ = connectedDev
+// creating a new room
+func createRoom(roomAndNames *RoomAndNames) {
+	roomAndNames.rooms = append(roomAndNames.rooms, Room{})
+}
 
+// connect to a room
+func joinRoom(room *Room, cd *connectedDevice) {
+	room.connectedDevs[cd.ip] = cd
+	// actual connection here
+}
+
+// leave room
+func leaveRoom(room *Room, cd *connectedDevice) {
+	delete(room.connectedDevs, cd.ip)
+
+}
+
+// Saving display name from form entry (not used)
+func displayName(w http.ResponseWriter, r *http.Request) {
+	name := r.FormValue("name")
+	_ = name
 }
