@@ -16,19 +16,11 @@ func main() {
 	fmt.Print(GetOutboundIP())
 	fmt.Println(":3621")
 
-	th := &RoomAndNames{counter: 0}
+	th := &RoomAndNames{counter: 0, nil}
 
 	http.Handle("/count", th)
 
-	http.Handle("", th)
-
-	//http.Handle("/newUser", )
-
 	http.ListenAndServe(":3621", nil)
-
-	for 1 == 1 {
-		break
-	}
 
 }
 
@@ -65,20 +57,22 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Hello ", r.RemoteAddr)
 
 	newUser(ct, r)
+	//printUsers(w, ct, r)
 
 	fmt.Fprintln(w, "Counter:", ct.counter)
 }
 
 func newUser(roomAndNames *RoomAndNames, r *http.Request) {
 
-	val, ok := roomAndNames.connectedDevs[r.RemoteAddr]
+	if val, ok := roomAndNames.connectedDevs[r.RemoteAddr]; ok {
+		fmt.Println(val.ip)
+	} else {
+		var tmp *connectedDevice
+		tmp.ip = r.RemoteAddr
 
-	if ok {
-		fmt.Println(val)
-		return
+		roomAndNames.connectedDevs[r.RemoteAddr] = tmp
+		fmt.Println("F")
 	}
-
-	roomAndNames.connectedDevs[r.RemoteAddr] = &connectedDevice{ip: r.RemoteAddr, name: ""}
 }
 
 // Saving display name from form entry
@@ -91,3 +85,10 @@ func displayName(w http.ResponseWriter, r *http.Request) {
 	_ = connectedDev
 
 }
+
+/*
+func printUsers(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
+	for key, element := range roomAndNames.connectedDevs {
+		fmt.Println("Key:", key, "=>", "Element:", element)
+	}
+}*/
