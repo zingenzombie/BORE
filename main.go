@@ -16,8 +16,14 @@ func main() {
 	fmt.Print(GetOutboundIP())
 	fmt.Println(":3621")
 
-	th := &CounterHandler{counter: 0}
+	th := &RoomAndNames{counter: 0}
+
 	http.Handle("/count", th)
+
+	http.Handle("", th)
+
+	//http.Handle("/newUser", )
+
 	http.ListenAndServe(":3621", nil)
 
 	for 1 == 1 {
@@ -46,26 +52,39 @@ type connectedDevice struct {
 }
 
 // Structure for the series of rooms that hold users.
-type CounterHandler struct {
+type RoomAndNames struct {
 	counter       int
 	connectedDevs map[string]*connectedDevice
 }
 
-// Responds to all HTTP requests.
-func (ct *CounterHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+// Responds to HTTP /count request.
+func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(ct.counter)
 	ct.counter++
 
-	//THIS NEEDS TO BE CHANGED AS IT WILL SIMPLY CHECK FOR THE FRONT END'S ADDRESS AND STORE THAT AS A USER
 	fmt.Fprintln(w, "Hello ", r.RemoteAddr)
 
+	newUser(ct, r)
+
 	fmt.Fprintln(w, "Counter:", ct.counter)
+}
+
+func newUser(roomAndNames *RoomAndNames, r *http.Request) {
+
+	val, ok := roomAndNames.connectedDevs[r.RemoteAddr]
+
+	if ok {
+		fmt.Println(val)
+		return
+	}
+
+	roomAndNames.connectedDevs[r.RemoteAddr] = &connectedDevice{ip: r.RemoteAddr, name: ""}
 }
 
 // Saving display name from form entry
 func displayName(w http.ResponseWriter, r *http.Request) {
 	connectedDev := connectedDevice{
-		string(GetOutboundIP()), 
+		string(GetOutboundIP()),
 		r.FormValue("name"),
 	}
 	// need to store information in some way
