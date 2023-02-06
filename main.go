@@ -16,7 +16,7 @@ func main() {
 	fmt.Print(GetOutboundIP())
 	fmt.Println(":3621")
 
-	th := &RoomAndNames{counter: 0, nil}
+	th := &RoomAndNames{counter: 0}
 
 	http.Handle("/count", th)
 
