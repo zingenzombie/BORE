@@ -21,10 +21,11 @@ func main() {
 	th.connectedDevs = make(map[string]*connectedDevice)
 	th.rooms = make(map[string]*Room)
 
-	makeRooms()
+	makeRooms(th)
 
 	http.Handle("/joinRoom", th)
 	http.Handle("/connect", th)
+	http.Handle("/debug", th)
 
 	http.ListenAndServe(":3621", nil)
 
@@ -74,6 +75,10 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	newUser(w, ct, r)
 
 	fmt.Fprintln(w, "Hello ", r.RemoteAddr)
+
+	if r.RequestURI == "/debug" {
+		debug(ct, r)
+	}
 }
 
 func newUser(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
@@ -81,7 +86,7 @@ func newUser(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request)
 	if val, ok := roomAndNames.connectedDevs[r.RemoteAddr]; ok {
 		fmt.Println(val.ip)
 	} else {
-		tmp := connectedDevice{"", ""}
+		tmp := connectedDevice{"", "", true}
 		tmp.ip = r.RemoteAddr
 
 		roomAndNames.connectedDevs[r.RemoteAddr] = &tmp
@@ -105,6 +110,10 @@ func joinRoom(room *Room, cd *connectedDevice) {
 func leaveRoom(room *Room, cd *connectedDevice) {
 	delete(room.connectedDevs, cd.ip)
 
+}
+
+func debug(roomAndNames *RoomAndNames, r *http.Request) {
+	fmt.Println("DEBUG TIME!!!")
 }
 
 // Saving display name from form entry (not used)
