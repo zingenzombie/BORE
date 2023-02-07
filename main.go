@@ -20,7 +20,7 @@ func main() {
 
 	th.connectedDevs = make(map[string]*connectedDevice)
 
-	http.Handle("/count", th)
+	http.Handle("/joinRoom", th)
 	http.Handle("/connect", th)
 
 	http.ListenAndServe(":3621", nil)
@@ -59,17 +59,13 @@ type RoomAndNames struct {
 
 // Responds to HTTP /count request.
 func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(ct.counter)
-	ct.counter++
+
+	newUser(w, ct, r)
 
 	fmt.Fprintln(w, "Hello ", r.RemoteAddr)
-	newUser(ct, r)
-	printUsers(w, ct, r)
-
-	fmt.Fprintln(w, "Counter:", ct.counter)
 }
 
-func newUser(roomAndNames *RoomAndNames, r *http.Request) {
+func newUser(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
 
 	if val, ok := roomAndNames.connectedDevs[r.RemoteAddr]; ok {
 		fmt.Println(val.ip)
@@ -78,7 +74,7 @@ func newUser(roomAndNames *RoomAndNames, r *http.Request) {
 		tmp.ip = r.RemoteAddr
 
 		roomAndNames.connectedDevs[r.RemoteAddr] = &tmp
-		fmt.Println("F")
+		printUsers(w, roomAndNames, r)
 	}
 }
 
