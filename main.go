@@ -18,7 +18,10 @@ func main() {
 
 	th := &RoomAndNames{counter: 0}
 
+	th.connectedDevs = make(map[string]*connectedDevice)
+
 	http.Handle("/count", th)
+	http.Handle("/connect", th)
 
 	http.ListenAndServe(":3621", nil)
 
@@ -60,9 +63,8 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ct.counter++
 
 	fmt.Fprintln(w, "Hello ", r.RemoteAddr)
-
 	newUser(ct, r)
-	//printUsers(w, ct, r)
+	printUsers(w, ct, r)
 
 	fmt.Fprintln(w, "Counter:", ct.counter)
 }
@@ -72,10 +74,10 @@ func newUser(roomAndNames *RoomAndNames, r *http.Request) {
 	if val, ok := roomAndNames.connectedDevs[r.RemoteAddr]; ok {
 		fmt.Println(val.ip)
 	} else {
-		var tmp *connectedDevice
+		tmp := connectedDevice{"", ""}
 		tmp.ip = r.RemoteAddr
 
-		roomAndNames.connectedDevs[r.RemoteAddr] = tmp
+		roomAndNames.connectedDevs[r.RemoteAddr] = &tmp
 		fmt.Println("F")
 	}
 }
@@ -103,9 +105,8 @@ func displayName(w http.ResponseWriter, r *http.Request) {
 	_ = name
 }
 
-/*
 func printUsers(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
 	for key, element := range roomAndNames.connectedDevs {
 		fmt.Println("Key:", key, "=>", "Element:", element)
 	}
-}*/
+}
