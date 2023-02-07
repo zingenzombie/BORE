@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -26,6 +27,7 @@ func main() {
 	http.Handle("/joinRoom", th)
 	http.Handle("/connect", th)
 	http.Handle("/debug", th)
+	http.Handle("/getRooms", th)
 
 	http.ListenAndServe(":3621", nil)
 
@@ -56,6 +58,7 @@ type connectedDevice struct {
 	ip     string
 	name   string
 	active bool
+	room   *Room
 }
 
 type Room struct {
@@ -78,6 +81,10 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if r.RequestURI == "/debug" {
 		debug(ct, r)
+	} else if r.RequestURI == "/joinRoom" {
+		joinRoom(ct, r)
+	} else if r.RequestURI == "/getRooms" {
+		printRooms(w, ct)
 	}
 }
 
@@ -86,11 +93,11 @@ func newUser(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request)
 	if val, ok := roomAndNames.connectedDevs[r.RemoteAddr]; ok {
 		fmt.Println(val.ip)
 	} else {
-		tmp := connectedDevice{"", "", true}
+		tmp := connectedDevice{"", "", true, nil}
 		tmp.ip = r.RemoteAddr
 
 		roomAndNames.connectedDevs[r.RemoteAddr] = &tmp
-		printUsers(w, roomAndNames, r)
+		printUsers(w, roomAndNames)
 	}
 }
 
@@ -101,15 +108,32 @@ func createRoom(roomAndNames *RoomAndNames) {
 }*/
 
 // connect to a room
-func joinRoom(room *Room, cd *connectedDevice) {
-	room.connectedDevs[cd.ip] = cd
-	// actual connection here
+func joinRoom(roomAndNames *RoomAndNames, r *http.Request) {
+	body, error := ioutil.ReadAll(r.Body)
+	r.Body.Close()
+	if error != nil {
+		fmt.Println(error)
+	}
+
+	if roomAndNames.connectedDevs[r.RemoteAddr].room != nil {
+		leaveRoom(roomAndNames.connectedDevs[r.RemoteAddr])
+	}
+
+	roomAndNames.rooms[string(body)].connectedDevs[r.RemoteAddr] = roomAndNames.connectedDevs[r.RemoteAddr]
+	roomAndNames.connectedDevs[r.RemoteAddr].room = roomAndNames.rooms[string(body)]
 }
 
 // leave room
-func leaveRoom(room *Room, cd *connectedDevice) {
-	delete(room.connectedDevs, cd.ip)
+func leaveRoom(cd *connectedDevice) {
 
+	for key := range cd.room.connectedDevs {
+		if key == string(cd.ip) {
+			delete(cd.room.connectedDevs, key)
+			cd.room = nil
+			return
+		}
+	}
+	fmt.Println("User " + cd.ip + " does not exist within a room!")
 }
 
 func debug(roomAndNames *RoomAndNames, r *http.Request) {
@@ -122,8 +146,21 @@ func displayName(w http.ResponseWriter, r *http.Request) {
 	_ = name
 }
 
-func printUsers(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
+func printUsers(w http.ResponseWriter, roomAndNames *RoomAndNames) {
 	for key, element := range roomAndNames.connectedDevs {
-		fmt.Println("Key:", key, "=>", "Element:", element)
+		fmt.Println(w, "Key:", key, "=>", "Element:", element)
+	}
+}
+
+func printRooms(w http.ResponseWriter, roomAndNames *RoomAndNames) {
+	for key := range roomAndNames.rooms {
+		fmt.Fprintln(w, key, " room:")
+		printRoomUsers(w, roomAndNames.rooms[key])
+	}
+}
+
+func printRoomUsers(w http.ResponseWriter, room *Room) {
+	for key, element := range room.connectedDevs {
+		fmt.Fprintln(w, "Key:", key, "=>", "Element:", element)
 	}
 }
