@@ -28,6 +28,7 @@ func main() {
 	http.Handle("/connect", th)
 	http.Handle("/debug", th)
 	http.Handle("/getRooms", th)
+	http.Handle("/setName", th)
 
 	http.ListenAndServe(":3621", nil)
 
@@ -77,14 +78,20 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	newUser(w, ct, r)
 
-	fmt.Fprintln(w, "Hello ", r.RemoteAddr)
-
 	if r.RequestURI == "/debug" {
 		debug(ct, r)
 	} else if r.RequestURI == "/joinRoom" {
 		joinRoom(ct, r)
 	} else if r.RequestURI == "/getRooms" {
 		printRooms(w, ct)
+	} else if r.RequestURI == "/setName" {
+		setName(ct, r)
+	}
+
+	if ct.connectedDevs[r.RemoteAddr].name == "" {
+		fmt.Fprintln(w, "Hello ", r.RemoteAddr)
+	} else {
+		fmt.Fprintln(w, "Hello ", ct.connectedDevs[r.RemoteAddr].name)
 	}
 }
 
@@ -99,6 +106,16 @@ func newUser(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request)
 		roomAndNames.connectedDevs[r.RemoteAddr] = &tmp
 		printUsers(w, roomAndNames)
 	}
+}
+
+func setName(roomAndNames *RoomAndNames, r *http.Request) {
+	body, error := ioutil.ReadAll(r.Body)
+	r.Body.Close()
+	if error != nil {
+		fmt.Println(error)
+	}
+
+	roomAndNames.connectedDevs[r.RemoteAddr].name = string(body)
 }
 
 /*
@@ -148,7 +165,11 @@ func displayName(w http.ResponseWriter, r *http.Request) {
 
 func printUsers(w http.ResponseWriter, roomAndNames *RoomAndNames) {
 	for key, element := range roomAndNames.connectedDevs {
-		fmt.Println(w, "Key:", key, "=>", "Element:", element)
+		if element.name != "" {
+			fmt.Fprintln(w, "Key:", element.name, "=>", "Element:", element)
+		} else {
+			fmt.Fprintln(w, "Key:", key, "=>", "Element:", element)
+		}
 	}
 }
 
@@ -161,6 +182,10 @@ func printRooms(w http.ResponseWriter, roomAndNames *RoomAndNames) {
 
 func printRoomUsers(w http.ResponseWriter, room *Room) {
 	for key, element := range room.connectedDevs {
-		fmt.Fprintln(w, "Key:", key, "=>", "Element:", element)
+		if element.name != "" {
+			fmt.Fprintln(w, "Key:", element.name, "=>", "Element:", element)
+		} else {
+			fmt.Fprintln(w, "Key:", key, "=>", "Element:", element)
+		}
 	}
 }
