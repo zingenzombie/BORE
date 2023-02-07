@@ -19,12 +19,22 @@ func main() {
 	th := &RoomAndNames{counter: 0}
 
 	th.connectedDevs = make(map[string]*connectedDevice)
+	th.rooms = make(map[string]*Room)
+
+	makeRooms()
 
 	http.Handle("/joinRoom", th)
 	http.Handle("/connect", th)
 
 	http.ListenAndServe(":3621", nil)
 
+}
+
+func makeRooms(roomAndNames *RoomAndNames) {
+	roomAndNames.rooms["star"] = &Room{make(map[string]*connectedDevice)}
+	roomAndNames.rooms["square"] = &Room{make(map[string]*connectedDevice)}
+	roomAndNames.rooms["circle"] = &Room{make(map[string]*connectedDevice)}
+	roomAndNames.rooms["triangle"] = &Room{make(map[string]*connectedDevice)}
 }
 
 // Gets the device's local address, which is returned to the user.
@@ -42,8 +52,9 @@ func GetOutboundIP() net.IP {
 
 // Structure for a user's address and string.
 type connectedDevice struct {
-	ip   string
-	name string
+	ip     string
+	name   string
+	active bool
 }
 
 type Room struct {
@@ -54,7 +65,7 @@ type Room struct {
 type RoomAndNames struct {
 	counter       int
 	connectedDevs map[string]*connectedDevice
-	rooms         []Room
+	rooms         map[string]*Room
 }
 
 // Responds to HTTP /count request.
@@ -78,10 +89,11 @@ func newUser(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request)
 	}
 }
 
+/*
 // creating a new room
 func createRoom(roomAndNames *RoomAndNames) {
 	roomAndNames.rooms = append(roomAndNames.rooms, Room{})
-}
+}*/
 
 // connect to a room
 func joinRoom(room *Room, cd *connectedDevice) {
