@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 )
 
 func main() {
@@ -22,10 +23,12 @@ func main() {
 	th.rooms = make(map[string]*Room)
 
 	makeRooms(th)
+	go checkUsers(th)
 
 	http.Handle("/joinRoom", th)
 	http.Handle("/connect", th)
 	http.Handle("/debug", th)
+	http.Handle("/checkIn", th)
 
 	http.ListenAndServe(":3621", nil)
 
@@ -53,9 +56,10 @@ func GetOutboundIP() net.IP {
 
 // Structure for a user's address and string.
 type connectedDevice struct {
-	ip     string
-	name   string
-	active bool
+	ip          string
+	name        string
+	active      bool
+	lastCheckIn time.Time
 }
 
 type Room struct {
@@ -79,6 +83,10 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.RequestURI == "/debug" {
 		debug(ct, r)
 	}
+	if r.RequestURI == "/checkIn" {
+		checkIn(ct, r)
+	}
+
 }
 
 func newUser(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
@@ -86,7 +94,7 @@ func newUser(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request)
 	if val, ok := roomAndNames.connectedDevs[r.RemoteAddr]; ok {
 		fmt.Println(val.ip)
 	} else {
-		tmp := connectedDevice{"", "", true}
+		tmp := connectedDevice{"", "", true, time.Now().UTC()}
 		tmp.ip = r.RemoteAddr
 
 		roomAndNames.connectedDevs[r.RemoteAddr] = &tmp
@@ -116,10 +124,33 @@ func debug(roomAndNames *RoomAndNames, r *http.Request) {
 	fmt.Println("DEBUG TIME!!!")
 }
 
-// Saving display name from form entry (not used)
+/*// Saving display name from form entry (not used)
 func displayName(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	_ = name
+}*/
+
+// setting time of last checkin
+func checkIn(roomAndNames *RoomAndNames, r *http.Request) {
+	roomAndNames.connectedDevs[r.RemoteAddr].lastCheckIn = time.Now().UTC()
+}
+
+// looping through connected devices
+func checkActive(roomAndNames *RoomAndNames) {
+	for _, element := range roomAndNames.connectedDevs {
+		// device inactive if no checkin in 10 seconds
+		if time.Now().UTC().Sub(element.lastCheckIn) > (10 * time.Second) {
+			element.active = false
+		}
+	}
+}
+
+// calling checkActive every second
+func checkUsers(roomAndNames *RoomAndNames) {
+	for {
+		<-time.After(1 * time.Second)
+		go checkActive(roomAndNames)
+	}
 }
 
 func printUsers(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
