@@ -1,0 +1,13 @@
+button {
+    display: block;
+    margin: 0 auto;
+    padding: 5px;
+    font-family: Arial, sans-serif;
+}
+
+div {
+    text-align: center;
+    padding: 0px;
+    margin: 20px auto;
+    font-family: Arial, sans-serif;
+}
