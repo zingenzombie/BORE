@@ -172,6 +172,7 @@ func displayName(w http.ResponseWriter, r *http.Request) {
 // setting time of last checkin
 func checkIn(roomAndNames *RoomAndNames, r *http.Request) {
 	roomAndNames.connectedDevs[r.RemoteAddr].lastCheckIn = time.Now().UTC()
+	roomAndNames.connectedDevs[r.RemoteAddr].active = true
 }
 
 // looping through connected devices
