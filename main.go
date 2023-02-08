@@ -32,6 +32,7 @@ func main() {
 	http.Handle("/getRooms", th)
 	http.Handle("/setName", th)
 	http.Handle("/checkIn", th)
+	http.Handle("/getRoomMembers", th)
 
 	http.ListenAndServe(":3621", nil)
 
@@ -93,6 +94,8 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		setName(ct, r)
 	} else if r.RequestURI == "/checkIn" {
 		checkIn(ct, r)
+	} else if r.RequestURI == "/getRoomMembers" {
+		printRoomUsers(w, ct.connectedDevs[r.RemoteAddr].room)
 	}
 
 	if ct.connectedDevs[r.RemoteAddr].name == "" {
@@ -219,6 +222,10 @@ func printRooms(w http.ResponseWriter, roomAndNames *RoomAndNames) {
 }
 
 func printRoomUsers(w http.ResponseWriter, room *Room) {
+	if room == nil {
+		fmt.Fprintln(w, "This user is not in a room or this room does not exist.")
+	}
+
 	for key, element := range room.connectedDevs {
 		if element.name != "" {
 			fmt.Fprintln(w, "Key:", element.name, "=>", "Element:", element)
