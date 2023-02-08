@@ -20,16 +20,16 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'main-page'`, () => {
+  it(`should have as title 'boreprojapp'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('main-page');
+    expect(app.title).toEqual('boreprojapp');
   });
 
   it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.content span')?.textContent).toContain('main-page app is running!');
+    expect(compiled.querySelector('.content span')?.textContent).toContain('boreprojapp app is running!');
   });
 });

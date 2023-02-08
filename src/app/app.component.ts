@@ -6,10 +6,5 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'BORE';
-  subTitle = 'Join a room and share files';
-
-  showRectangle = false;
-
-  
+  title = 'boreprojapp';
 }
