@@ -81,6 +81,7 @@ type RoomAndNames struct {
 func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	newUser(w, ct, r)
+	checkIn(ct, r)
 
 	if r.RequestURI == "/debug" {
 		debug(ct, r)
@@ -149,6 +150,11 @@ func joinRoom(roomAndNames *RoomAndNames, r *http.Request) {
 // leave room
 func leaveRoom(cd *connectedDevice) {
 
+	if cd.room == nil {
+		fmt.Println("User " + cd.ip + " does not exist within a room!")
+		return
+	}
+
 	for key := range cd.room.connectedDevs {
 		if key == string(cd.ip) {
 			delete(cd.room.connectedDevs, key)
@@ -156,7 +162,6 @@ func leaveRoom(cd *connectedDevice) {
 			return
 		}
 	}
-	fmt.Println("User " + cd.ip + " does not exist within a room!")
 }
 
 func debug(roomAndNames *RoomAndNames, r *http.Request) {
@@ -171,16 +176,19 @@ func displayName(w http.ResponseWriter, r *http.Request) {
 
 // setting time of last checkin
 func checkIn(roomAndNames *RoomAndNames, r *http.Request) {
+	fmt.Println(r.RemoteAddr, " checked in.")
 	roomAndNames.connectedDevs[r.RemoteAddr].lastCheckIn = time.Now().UTC()
 	roomAndNames.connectedDevs[r.RemoteAddr].active = true
 }
 
 // looping through connected devices
 func checkActive(roomAndNames *RoomAndNames) {
-	for _, element := range roomAndNames.connectedDevs {
+	for key, element := range roomAndNames.connectedDevs {
 		// device inactive if no checkin in 10 seconds
 		if time.Now().UTC().Sub(element.lastCheckIn) > (10 * time.Second) {
-			element.active = false
+			fmt.Println(element.ip, " checking out.")
+			leaveRoom(element)
+			delete(roomAndNames.connectedDevs, key)
 		}
 	}
 }
@@ -189,7 +197,7 @@ func checkActive(roomAndNames *RoomAndNames) {
 func checkUsers(roomAndNames *RoomAndNames) {
 	for {
 		<-time.After(1 * time.Second)
-		go checkActive(roomAndNames)
+		checkActive(roomAndNames)
 	}
 }
 
