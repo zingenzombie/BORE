@@ -1,0 +1,14 @@
+<!-- User: <input type="text" [(ngModel)]="usernameForm"> -->
+
+<!-- User: <input type="text" class="form-control" id="name"
+       required
+       [(ngModel)]="usernameForm" name="name"> -->
+
+       <form (ngSubmit)="onSubmit()">
+        <label>
+          Enter your username:
+          <input type="text" [(ngModel)]="username" name="username" required>
+        </label>
+        <button type="submit">Submit</button>
+      </form>
+      

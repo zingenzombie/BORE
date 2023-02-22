@@ -1,22 +1,29 @@
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { CircleroomComponent } from './circleroom/circleroom.component';
 import { FileComponent } from './file/file.component';
+import { UserService } from './user.service';
+import { UsernameComponent } from './username/username.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     CircleroomComponent,
-    FileComponent
+    FileComponent,
+    UsernameComponent,
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    CommonModule,
+    FormsModule
   ],
-  providers: [],
+  providers: [UserService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
