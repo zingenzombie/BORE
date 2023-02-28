@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -138,19 +137,25 @@ func newUser(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request)
 	}
 }
 
-func setName(roomAndNames *RoomAndNames, r *http.Request) {
-	body, error := ioutil.ReadAll(r.Body)
-	r.Body.Close()
-	if error != nil {
-		fmt.Println(error)
-	}
-
-	roomAndNames.connectedDevs[r.RemoteAddr].name = string(body)
-}
-
 type roomRequest struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
+}
+
+type name struct {
+	Name string `json:"name"`
+}
+
+func setName(roomAndNames *RoomAndNames, r *http.Request) {
+
+	var requestName name
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&requestName)
+	if err != nil {
+		panic(err)
+	}
+
+	roomAndNames.connectedDevs[r.RemoteAddr].name = requestName.Name
 }
 
 // creating a new room
@@ -165,20 +170,28 @@ func createRoom(roomAndNames *RoomAndNames, r *http.Request, w http.ResponseWrit
 	roomAndNames.rooms[requestData.Name] = &Room{make(map[string]*connectedDevice), false, requestData.Password}
 }
 
+type requestJoinRoom struct {
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
 // connect to a room
 func joinRoom(roomAndNames *RoomAndNames, r *http.Request) {
-	body, error := ioutil.ReadAll(r.Body)
-	r.Body.Close()
-	if error != nil {
-		fmt.Println(error)
+	var requestData requestJoinRoom
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&requestData)
+	if err != nil {
+		panic(err)
 	}
+
+	//if roomAndNames.rooms[requestData.Name].password != ""
 
 	if roomAndNames.connectedDevs[r.RemoteAddr].room != nil {
 		leaveRoom(roomAndNames.connectedDevs[r.RemoteAddr])
 	}
 
-	roomAndNames.rooms[string(body)].connectedDevs[r.RemoteAddr] = roomAndNames.connectedDevs[r.RemoteAddr]
-	roomAndNames.connectedDevs[r.RemoteAddr].room = roomAndNames.rooms[string(body)]
+	roomAndNames.rooms[requestData.Name].connectedDevs[r.RemoteAddr] = roomAndNames.connectedDevs[r.RemoteAddr]
+	roomAndNames.connectedDevs[r.RemoteAddr].room = roomAndNames.rooms[requestData.Name]
 
 }
 
