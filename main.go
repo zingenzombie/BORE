@@ -18,6 +18,8 @@ func main() {
 	fmt.Print(GetOutboundIP())
 	fmt.Println(":3621")
 
+	mux := http.NewServeMux()
+
 	th := &RoomAndNames{counter: 0}
 
 	th.connectedDevs = make(map[string]*connectedDevice)
@@ -26,16 +28,28 @@ func main() {
 	makeRooms(th)
 	go checkUsers(th)
 
-	http.Handle("/joinRoom", th)
-	http.Handle("/connect", th)
-	http.Handle("/debug", th)
-	http.Handle("/getRooms", th)
-	http.Handle("/setName", th)
-	http.Handle("/checkIn", th)
-	http.Handle("/getRoomMembers", th)
+	mux.HandleFunc("/", th.ServeHTTP)
 
-	http.ListenAndServe(":3621", nil)
+	http.ListenAndServe(":3621", corsHandler(mux))
 
+}
+
+func corsHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set the CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+
+		// If the request method is OPTIONS, send a 200 status code and return
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Call the original handler function
+		h.ServeHTTP(w, r)
+	})
 }
 
 func makeRooms(roomAndNames *RoomAndNames) {
@@ -84,17 +98,18 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	newUser(w, ct, r)
 	checkIn(ct, r)
 
-	if r.RequestURI == "/debug" {
+	switch r.URL.Path {
+	case "/debug":
 		debug(ct, r)
-	} else if r.RequestURI == "/joinRoom" {
+	case "/joinRoom":
 		joinRoom(ct, r)
-	} else if r.RequestURI == "/getRooms" {
+	case "/getRooms":
 		printRooms(w, ct)
-	} else if r.RequestURI == "/setName" {
+	case "/setName":
 		setName(ct, r)
-	} else if r.RequestURI == "/checkIn" {
+	case "/checkIn":
 		checkIn(ct, r)
-	} else if r.RequestURI == "/getRoomMembers" {
+	case "/getRoomMembers":
 		printRoomUsers(w, ct.connectedDevs[r.RemoteAddr].room)
 	}
 
@@ -148,6 +163,7 @@ func joinRoom(roomAndNames *RoomAndNames, r *http.Request) {
 
 	roomAndNames.rooms[string(body)].connectedDevs[r.RemoteAddr] = roomAndNames.connectedDevs[r.RemoteAddr]
 	roomAndNames.connectedDevs[r.RemoteAddr].room = roomAndNames.rooms[string(body)]
+
 }
 
 // leave room
@@ -170,12 +186,6 @@ func leaveRoom(cd *connectedDevice) {
 func debug(roomAndNames *RoomAndNames, r *http.Request) {
 	fmt.Println("DEBUG TIME!!!")
 }
-
-/*// Saving display name from form entry (not used)
-func displayName(w http.ResponseWriter, r *http.Request) {
-	name := r.FormValue("name")
-	_ = name
-}*/
 
 // setting time of last checkin
 func checkIn(roomAndNames *RoomAndNames, r *http.Request) {
