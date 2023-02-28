@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -53,10 +54,10 @@ func corsHandler(h http.Handler) http.Handler {
 }
 
 func makeRooms(roomAndNames *RoomAndNames) {
-	roomAndNames.rooms["star"] = &Room{make(map[string]*connectedDevice)}
-	roomAndNames.rooms["square"] = &Room{make(map[string]*connectedDevice)}
-	roomAndNames.rooms["circle"] = &Room{make(map[string]*connectedDevice)}
-	roomAndNames.rooms["triangle"] = &Room{make(map[string]*connectedDevice)}
+	roomAndNames.rooms["star"] = &Room{make(map[string]*connectedDevice), true, ""}
+	roomAndNames.rooms["square"] = &Room{make(map[string]*connectedDevice), true, ""}
+	roomAndNames.rooms["circle"] = &Room{make(map[string]*connectedDevice), true, ""}
+	roomAndNames.rooms["triangle"] = &Room{make(map[string]*connectedDevice), true, ""}
 }
 
 // Gets the device's local address, which is returned to the user.
@@ -83,6 +84,8 @@ type connectedDevice struct {
 
 type Room struct {
 	connectedDevs map[string]*connectedDevice
+	isPersistant  bool
+	password      string
 }
 
 // Structure for the series of rooms that hold users.
@@ -111,6 +114,8 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		checkIn(ct, r)
 	case "/getRoomMembers":
 		printRoomUsers(w, ct.connectedDevs[r.RemoteAddr].room)
+	case "/createRoom":
+		createRoom(ct, r, w)
 	}
 
 	if ct.connectedDevs[r.RemoteAddr].name == "" {
@@ -143,11 +148,22 @@ func setName(roomAndNames *RoomAndNames, r *http.Request) {
 	roomAndNames.connectedDevs[r.RemoteAddr].name = string(body)
 }
 
-/*
+type roomRequest struct {
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
 // creating a new room
-func createRoom(roomAndNames *RoomAndNames) {
-	roomAndNames.rooms = append(roomAndNames.rooms, Room{})
-}*/
+func createRoom(roomAndNames *RoomAndNames, r *http.Request, w http.ResponseWriter) {
+	var requestData roomRequest
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&requestData)
+	if err != nil {
+		panic(err)
+	}
+
+	roomAndNames.rooms[requestData.Name] = &Room{make(map[string]*connectedDevice), false, requestData.Password}
+}
 
 // connect to a room
 func joinRoom(roomAndNames *RoomAndNames, r *http.Request) {
@@ -210,7 +226,7 @@ func checkActive(roomAndNames *RoomAndNames) {
 func checkUsers(roomAndNames *RoomAndNames) {
 	for {
 		<-time.After(1 * time.Second)
-		checkActive(roomAndNames)
+		//checkActive(roomAndNames)
 	}
 }
 
@@ -234,6 +250,7 @@ func printRooms(w http.ResponseWriter, roomAndNames *RoomAndNames) {
 func printRoomUsers(w http.ResponseWriter, room *Room) {
 	if room == nil {
 		fmt.Fprintln(w, "This user is not in a room or this room does not exist.")
+		return
 	}
 
 	for key, element := range room.connectedDevs {
