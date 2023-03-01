@@ -104,7 +104,7 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "/debug":
 		debug(ct, r)
 	case "/joinRoom":
-		joinRoom(ct, r)
+		joinRoom(w, ct, r)
 	case "/getRooms":
 		printRooms(w, ct)
 	case "/setName":
@@ -137,11 +137,6 @@ func newUser(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request)
 	}
 }
 
-type roomRequest struct {
-	Name     string `json:"name"`
-	Password string `json:"password"`
-}
-
 type name struct {
 	Name string `json:"name"`
 }
@@ -158,6 +153,11 @@ func setName(roomAndNames *RoomAndNames, r *http.Request) {
 	roomAndNames.connectedDevs[r.RemoteAddr].name = requestName.Name
 }
 
+type roomRequest struct {
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
 // creating a new room
 func createRoom(roomAndNames *RoomAndNames, r *http.Request, w http.ResponseWriter) {
 	var requestData roomRequest
@@ -165,6 +165,11 @@ func createRoom(roomAndNames *RoomAndNames, r *http.Request, w http.ResponseWrit
 	err := decoder.Decode(&requestData)
 	if err != nil {
 		panic(err)
+	}
+
+	if roomAndNames.rooms[requestData.Name] != nil {
+		fmt.Fprintln(w, "A room with that name already exists!")
+		return
 	}
 
 	roomAndNames.rooms[requestData.Name] = &Room{make(map[string]*connectedDevice), false, requestData.Password}
@@ -176,7 +181,7 @@ type requestJoinRoom struct {
 }
 
 // connect to a room
-func joinRoom(roomAndNames *RoomAndNames, r *http.Request) {
+func joinRoom(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
 	var requestData requestJoinRoom
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&requestData)
@@ -184,7 +189,15 @@ func joinRoom(roomAndNames *RoomAndNames, r *http.Request) {
 		panic(err)
 	}
 
-	//if roomAndNames.rooms[requestData.Name].password != ""
+	if roomAndNames.rooms[requestData.Name] == nil {
+		fmt.Fprintln(w, "That room does not exist")
+		return
+	}
+
+	if roomAndNames.rooms[requestData.Name].password != requestData.Password {
+		fmt.Fprintln(w, "That password is incorrect")
+		return
+	}
 
 	if roomAndNames.connectedDevs[r.RemoteAddr].room != nil {
 		leaveRoom(roomAndNames.connectedDevs[r.RemoteAddr])
