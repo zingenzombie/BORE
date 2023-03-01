@@ -133,7 +133,7 @@ func newUser(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request)
 		tmp.ip = r.RemoteAddr
 
 		roomAndNames.connectedDevs[r.RemoteAddr] = &tmp
-		printUsers(w, roomAndNames)
+		//printUsers(w, roomAndNames)
 	}
 }
 
@@ -256,6 +256,7 @@ func checkUsers(roomAndNames *RoomAndNames) {
 	}
 }
 
+/*
 func printUsers(w http.ResponseWriter, roomAndNames *RoomAndNames) {
 	for key, element := range roomAndNames.connectedDevs {
 		if element.name != "" {
@@ -265,6 +266,7 @@ func printUsers(w http.ResponseWriter, roomAndNames *RoomAndNames) {
 		}
 	}
 }
+*/
 
 func printRooms(w http.ResponseWriter, roomAndNames *RoomAndNames) {
 	for key := range roomAndNames.rooms {
@@ -281,9 +283,9 @@ func printRoomUsers(w http.ResponseWriter, room *Room) {
 
 	for key, element := range room.connectedDevs {
 		if element.name != "" {
-			fmt.Fprintln(w, "Key:", element.name, "=>", "Element:", element)
+			fmt.Fprintln(w, "User:", element.name)
 		} else {
-			fmt.Fprintln(w, "Key:", key, "=>", "Element:", element)
+			fmt.Fprintln(w, "User:", key)
 		}
 	}
 }
