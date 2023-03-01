@@ -173,6 +173,21 @@ func createRoom(roomAndNames *RoomAndNames, r *http.Request, w http.ResponseWrit
 	}
 
 	roomAndNames.rooms[requestData.Name] = &Room{make(map[string]*connectedDevice), false, requestData.Password}
+
+	if roomAndNames.connectedDevs[r.RemoteAddr].room != nil {
+		leaveRoom(roomAndNames.connectedDevs[r.RemoteAddr])
+	}
+
+	roomAndNames.rooms[requestData.Name].connectedDevs[r.RemoteAddr] = roomAndNames.connectedDevs[r.RemoteAddr]
+	roomAndNames.connectedDevs[r.RemoteAddr].room = roomAndNames.rooms[requestData.Name]
+}
+
+func checkRooms(roomAndNames *RoomAndNames) {
+	for key, element := range roomAndNames.rooms {
+		if len(element.connectedDevs) == 0 && !element.isPersistant {
+			delete(roomAndNames.rooms, key)
+		}
+	}
 }
 
 type requestJoinRoom struct {
@@ -253,6 +268,7 @@ func checkUsers(roomAndNames *RoomAndNames) {
 	for {
 		<-time.After(1 * time.Second)
 		//checkActive(roomAndNames)
+		checkRooms(roomAndNames)
 	}
 }
 
