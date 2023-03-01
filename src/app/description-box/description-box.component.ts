@@ -7,4 +7,8 @@ import { Component } from '@angular/core';
 })
 export class DescriptionBoxComponent {
   showDescription = false;
+
+  toggle() {
+    this.showDescription = !this.showDescription;
+  }
 }
