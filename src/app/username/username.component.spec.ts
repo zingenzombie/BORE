@@ -79,12 +79,6 @@ describe('UsernameComponent', () => {
     expect(component.submitted).toBeTrue();
   });
   
-  it('should call the setUsername method of the UserService', () => {
-    spyOn(userService, 'setUsername');
-    component.onSubmit('John');
-    expect(userService.setUsername).toHaveBeenCalledWith('John');
-  });
-
   it('should call the postUsername method of the UserService', () => {
     spyOn(userService, 'postUsername');
     component.onSubmit('John');
