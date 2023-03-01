@@ -4,11 +4,21 @@
        required
        [(ngModel)]="usernameForm" name="name"> -->
 
-       <form (ngSubmit)="onSubmit()">
-        <label>
-          Enter your username:
-          <input type="text" [(ngModel)]="username" name="username" required>
-        </label>
-        <button type="submit">Submit</button>
-      </form>
-      
+<form #usersForm="ngForm" (ngSubmit)="onSubmit(usersForm.value)">
+  <label>
+    Enter your username:
+    <input type="text" [(ngModel)]="name" name="username" required>
+  </label>
+  <button type="submit">Submit</button>
+</form>
+
+<div *ngIf="userService.getUsername()">
+  <p>Hello {{userService.getUsername()}}!</p>
+</div>
+<hr>
+<p>Users</p>
+<table class="table">
+  <tr *ngFor="let user of userList">
+    <td>{{user}}</td>
+  </tr>
+</table>

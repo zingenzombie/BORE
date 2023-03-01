@@ -1,10 +1,12 @@
 <div class="title">{{title}}</div>
 <div class="subTitle">{{subTitle}}</div>
 
+<app-description-box></app-description-box>
+
 <app-username></app-username>
-<div *ngIf="userService.getUsername()">
+<!-- <div *ngIf="userService.getUsername()">
     <p>Hello {{userService.getUsername()}}!</p>
-</div>
+</div> -->
 
 <!-- <body style=" height: 100vh; display: flex; justify-content: center; ">
 <div id="screen"> --> <!--Fake body tag more or less-->
