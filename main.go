@@ -109,19 +109,23 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		printRooms(w, ct)
 	case "/setName":
 		setName(ct, r)
+	case "/getName":
+		getName(ct, r, w)
 	case "/checkIn":
 		checkIn(ct, r)
 	case "/getRoomMembers":
 		printRoomUsers(w, ct.connectedDevs[r.RemoteAddr].room)
+	case "/getAllMembers":
+		printAllUsers(w, ct)
 	case "/createRoom":
 		createRoom(ct, r, w)
 	}
 
-	if ct.connectedDevs[r.RemoteAddr].name == "" {
+	/*if ct.connectedDevs[r.RemoteAddr].name == "" {
 		fmt.Fprintln(w, "Hello ", r.RemoteAddr)
 	} else {
 		fmt.Fprintln(w, "Hello ", ct.connectedDevs[r.RemoteAddr].name)
-	}
+	}*/
 }
 
 func newUser(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
@@ -151,6 +155,26 @@ func setName(roomAndNames *RoomAndNames, r *http.Request) {
 	}
 
 	roomAndNames.connectedDevs[r.RemoteAddr].name = requestName.Name
+}
+
+func getName(roomAndNames *RoomAndNames, r *http.Request, w http.ResponseWriter) {
+
+	if roomAndNames.connectedDevs[r.RemoteAddr] != nil {
+		n := name{
+			Name: roomAndNames.connectedDevs[r.RemoteAddr].name,
+		}
+
+		jsonBytes, err := json.Marshal(n)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		w.Write(jsonBytes)
+	}
+
 }
 
 type roomRequest struct {
@@ -288,6 +312,16 @@ func printRooms(w http.ResponseWriter, roomAndNames *RoomAndNames) {
 	for key := range roomAndNames.rooms {
 		fmt.Fprintln(w, key, " room:")
 		printRoomUsers(w, roomAndNames.rooms[key])
+	}
+}
+
+func printAllUsers(w http.ResponseWriter, roomAndNames *RoomAndNames) {
+	for key, element := range roomAndNames.connectedDevs {
+		if element.name == "" {
+			fmt.Fprintln(w, key)
+		} else {
+			fmt.Fprintln(w, element.name)
+		}
 	}
 }
 
