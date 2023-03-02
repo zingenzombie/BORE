@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Flexbox Example</title>
+	<style>
+		body {
+			margin: 0;
+			height: 100vh;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+		}
+
+        .box 
+        {
+            width: 100px;
+            height: 100px;
+            background-color: #eee;
+            border: 2px solid black;
+            border-radius: 50%;
+            margin: 10px;
+            flex: 1;
+        }
+
+        #fileExchangeMainBox
+        {
+            display: flex; 
+            flex-wrap: wrap; 
+        }
+
+		#title
+        {
+            font-family: "Arial";
+		}
+	</style>
+</head>
+<body>
+	<h1 id="title">File Exchange Rooms:</h1>
+	<div id="fileExchangeMainBox">
+        <div class="box"></div>
+        <div class="box"></div>
+        <div class="box"></div>
+    </div>
+</body>
+</html>
