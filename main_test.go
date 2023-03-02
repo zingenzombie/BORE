@@ -114,8 +114,11 @@ func TestCheckIn(t *testing.T) {
 // checks that room is added to rooms
 func TestCreateRoom(t *testing.T) {
 	roomAndNames := &RoomAndNames{
-		rooms: make(map[string]*Room),
+		rooms:         make(map[string]*Room),
+		connectedDevs: make(map[string]*connectedDevice),
 	}
+
+	roomAndNames.connectedDevs["1"] = &connectedDevice{}
 
 	w := httptest.NewRecorder()
 
