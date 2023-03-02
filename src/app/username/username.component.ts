@@ -23,7 +23,6 @@ export class UsernameComponent implements OnInit{
   }
 
   onSubmit(name: string) {
-    console.log(name);
     this.userService.setUsername(this.name);
     this.submitted = true;
     this.addUser(this.name);

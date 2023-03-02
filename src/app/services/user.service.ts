@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
@@ -12,7 +12,7 @@ interface UserObject {
 })
 export class UserService {
   name!: string;
-  private apiUrl = 'http://10.136.165.182:3621/setName';
+  private apiUrl = 'http://10.136.157.172:3621/setName';
   //private user: UserObject = {name: this.name};
 
   constructor(private http: HttpClient) {}
@@ -21,18 +21,33 @@ export class UserService {
     this.name = name;
   }
 
-  getUsername(): string {
+  getUsername(): any {
+    // this.apiUrl = 'http://10.136.157.172:3621/getName';
+    // return JSON.stringify(this.http.get<any>('http://10.136.165.182:3621/getName'), null);
+    //return JSON.stringify(this.http.get<any>('http://10.136.157.172:3621/getName'), null) + 'i';
+    //return this.http.get('http://10.136.157.172:3621/getName').pipe(Map((res) => {return res;}));
     return this.name;
   }
   
-  
-  postUsername(name: string) {
-    this.http.post(this.apiUrl, name, {responseType: 'json'})
+  postUsername(username: any) {
+    console.log("This is a print statement" , username.username);
+    const headers = new HttpHeaders({'Content-Type': 'application/json'});
+    this.http.post('http://10.136.157.172:3621/setName', JSON.parse('{"name": "' + username.username + '"}'))
     .subscribe((res) => {
       console.log(res);
     });
     
   }
+
+
+  // postUsername(User: {name: string}) {
+    
+  //   this.http.post('http://10.136.157.172:3621/setName', User, {responseType: 'json'})
+  //   .subscribe((res) => {
+  //     console.log(res);
+  //   });
+    
+  // }
 
   // postUsername(user: {username: string}) {
   //   this.http.post(this.apiUrl, user)

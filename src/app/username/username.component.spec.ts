@@ -38,7 +38,7 @@ describe('UsernameService', () => {
   it('should post the username', () => {
     const username = 'Jane Doe';
     service.postUsername(username);
-    const req = httpMock.expectOne('http://10.136.165.182:3621/setName');
+    const req = httpMock.expectOne('http://10.136.157.172:3621/setName');
     expect(req.request.method).toBe('POST');
     req.flush({});
   });
@@ -79,6 +79,8 @@ describe('UsernameComponent', () => {
     expect(component.submitted).toBeTrue();
   });
   
+  
+
   it('should call the postUsername method of the UserService', () => {
     spyOn(userService, 'postUsername');
     component.onSubmit('John');
