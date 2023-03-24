@@ -117,6 +117,8 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		createRoom(ct, r, w)
 	}
 
+	fmt.Println("OMG HI")
+
 	if ct.connectedDevs[r.RemoteAddr].name == "" {
 		fmt.Fprintln(w, "Hello ", r.RemoteAddr)
 	} else {
