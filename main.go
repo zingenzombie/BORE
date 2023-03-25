@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/list"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -317,14 +318,33 @@ func printRooms(w http.ResponseWriter, roomAndNames *RoomAndNames) {
 	}
 }
 
+type allUsers struct {
+	Users list.List `json:"users"`
+}
+
 func printAllUsers(w http.ResponseWriter, roomAndNames *RoomAndNames) {
+	a := allUsers{
+		Users: list.List{},
+	}
+
 	for key, element := range roomAndNames.connectedDevs {
 		if element.name == "" {
-			fmt.Fprintln(w, key)
+			a.Users.PushBack(key)
 		} else {
-			fmt.Fprintln(w, element.name)
+			a.Users.PushBack(element.name)
 		}
 	}
+
+	jsonBytes, err := json.Marshal(a)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	w.Write(jsonBytes)
+
 }
 
 func printRoomUsers(w http.ResponseWriter, room *Room) {
