@@ -311,11 +311,29 @@ func printUsers(w http.ResponseWriter, roomAndNames *RoomAndNames) {
 }
 */
 
+type allRooms struct {
+	Rooms list.List `json:"rooms"`
+}
+
 func printRooms(w http.ResponseWriter, roomAndNames *RoomAndNames) {
-	for key := range roomAndNames.rooms {
-		fmt.Fprintln(w, key, " room:")
-		printRoomUsers(w, roomAndNames.rooms[key])
+	r := allRooms{
+		Rooms: list.List{},
 	}
+
+	for key := range roomAndNames.rooms {
+		r.Rooms.PushBack(key)
+		//printRoomUsers(w, roomAndNames.rooms[key])
+	}
+
+	jsonBytes, err := json.Marshal(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	w.Write(jsonBytes)
 }
 
 type allUsers struct {
@@ -347,17 +365,35 @@ func printAllUsers(w http.ResponseWriter, roomAndNames *RoomAndNames) {
 
 }
 
+type allRoomUsers struct {
+	RoomUsers list.List `json:"roomUsers"`
+}
+
 func printRoomUsers(w http.ResponseWriter, room *Room) {
 	if room == nil {
 		fmt.Fprintln(w, "This user is not in a room or this room does not exist.")
 		return
 	}
 
+	r := allRoomUsers{
+		RoomUsers: list.List{},
+	}
+
 	for key, element := range room.connectedDevs {
 		if element.name != "" {
-			fmt.Fprintln(w, "User:", element.name)
+			r.RoomUsers.PushBack(element.name)
 		} else {
-			fmt.Fprintln(w, "User:", key)
+			r.RoomUsers.PushBack(key)
 		}
 	}
+
+	jsonBytes, err := json.Marshal(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	w.Write(jsonBytes)
 }
