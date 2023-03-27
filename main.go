@@ -1,7 +1,6 @@
 package main
 
 import (
-	"container/list"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -312,16 +311,23 @@ func printUsers(w http.ResponseWriter, roomAndNames *RoomAndNames) {
 */
 
 type allRooms struct {
-	Rooms list.List `json:"rooms"`
+	Rooms string `json:"rooms"`
 }
 
 func printRooms(w http.ResponseWriter, roomAndNames *RoomAndNames) {
+	delimiter := ","
 	r := allRooms{
-		Rooms: list.List{},
+		Rooms: "",
 	}
 
+	count := 0
 	for key := range roomAndNames.rooms {
-		r.Rooms.PushBack(key)
+		count++
+		r.Rooms += key
+
+		if count != len(roomAndNames.rooms) {
+			r.Rooms += delimiter
+		}
 		//printRoomUsers(w, roomAndNames.rooms[key])
 	}
 
@@ -337,19 +343,26 @@ func printRooms(w http.ResponseWriter, roomAndNames *RoomAndNames) {
 }
 
 type allUsers struct {
-	Users list.List `json:"users"`
+	Users string `json:"users"`
 }
 
 func printAllUsers(w http.ResponseWriter, roomAndNames *RoomAndNames) {
+	delimiter := ","
 	a := allUsers{
-		Users: list.List{},
+		Users: "",
 	}
 
+	count := 0
 	for key, element := range roomAndNames.connectedDevs {
-		if element.name == "" {
-			a.Users.PushBack(key)
+		count++
+		if element.name != "" {
+			a.Users += element.name
 		} else {
-			a.Users.PushBack(element.name)
+			a.Users += key
+		}
+
+		if count != len(roomAndNames.connectedDevs) {
+			a.Users += delimiter
 		}
 	}
 
@@ -366,24 +379,32 @@ func printAllUsers(w http.ResponseWriter, roomAndNames *RoomAndNames) {
 }
 
 type allRoomUsers struct {
-	RoomUsers list.List `json:"roomUsers"`
+	RoomUsers string `json:"roomUsers"`
 }
 
 func printRoomUsers(w http.ResponseWriter, room *Room) {
+	delimiter := ","
+
 	if room == nil {
 		fmt.Fprintln(w, "This user is not in a room or this room does not exist.")
 		return
 	}
 
 	r := allRoomUsers{
-		RoomUsers: list.List{},
+		RoomUsers: "",
 	}
 
+	count := 0
 	for key, element := range room.connectedDevs {
+		count++
 		if element.name != "" {
-			r.RoomUsers.PushBack(element.name)
+			r.RoomUsers += element.name
 		} else {
-			r.RoomUsers.PushBack(key)
+			r.RoomUsers += key
+		}
+
+		if count != len(room.connectedDevs) {
+			r.RoomUsers += delimiter
 		}
 	}
 
