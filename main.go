@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -18,6 +19,8 @@ func main() {
 
 	fmt.Print(GetOutboundIP())
 	fmt.Println(":3621")
+
+	os.Mkdir("temp-files", 0755)
 
 	/*
 		fmt.Println("Starting front-end...")
