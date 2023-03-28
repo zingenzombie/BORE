@@ -12,7 +12,7 @@ interface UserObject {
 })
 export class UserService {
   name!: string;
-  private apiUrl = 'http://10.136.165.182:3621/setName';
+  private apiUrl = 'http://10.136.147.48:3621/setName';
   //private user: UserObject = {name: this.name};
 
   constructor(private http: HttpClient) {}
