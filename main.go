@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -17,6 +18,12 @@ func main() {
 
 	fmt.Print(GetOutboundIP())
 	fmt.Println(":3621")
+
+	/*
+		fmt.Println("Starting front-end...")
+
+		exec.Command("cd /BORE")
+		exec.Command("ng serve")*/
 
 	mux := http.NewServeMux()
 
@@ -119,15 +126,18 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		printAllUsers(w, ct)
 	case "/createRoom":
 		createRoom(ct, r, w)
+	case "/upload":
+		uploadFile(w, r)
 	}
 
 	fmt.Println("OMG HI")
 
-	if ct.connectedDevs[r.RemoteAddr].name == "" {
-		fmt.Fprintln(w, "Hello ", r.RemoteAddr)
-	} else {
-		fmt.Fprintln(w, "Hello ", ct.connectedDevs[r.RemoteAddr].name)
-	}
+	/*
+		if ct.connectedDevs[r.RemoteAddr].name == "" {
+			fmt.Fprintln(w, "Hello ", r.RemoteAddr)
+		} else {
+			fmt.Fprintln(w, "Hello ", ct.connectedDevs[r.RemoteAddr].name)
+		}*/
 }
 
 func newUser(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
@@ -182,6 +192,46 @@ func getName(roomAndNames *RoomAndNames, r *http.Request, w http.ResponseWriter)
 type roomRequest struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
+}
+
+func uploadFile(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("File Upload Endpoint Hit")
+
+	// Parse our multipart form, 10 << 20 specifies a maximum
+	// upload of 10 MB files.
+	r.ParseMultipartForm(10 << 20)
+	// FormFile returns the first file for the given key `myFile`
+	// it also returns the FileHeader so we can get the Filename,
+	// the Header and the size of the file
+	file, handler, err := r.FormFile("myFile")
+	if err != nil {
+		fmt.Println("Error Retrieving the File")
+		fmt.Println(err)
+		return
+	}
+	defer file.Close()
+	fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+	fmt.Printf("File Size: %+v\n", handler.Size)
+	fmt.Printf("MIME Header: %+v\n", handler.Header)
+
+	// Create a temporary file within our temp-images directory that follows
+	// a particular naming pattern
+	tempFile, err := ioutil.TempFile("temp-files", "upload-*.png")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer tempFile.Close()
+
+	// read all of the contents of our uploaded file into a
+	// byte array
+	fileBytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// write this byte array to our temporary file
+	tempFile.Write(fileBytes)
+	// return that we have successfully uploaded our file!
+	fmt.Fprintf(w, "Successfully Uploaded File\n")
 }
 
 // creating a new room
