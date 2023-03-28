@@ -3,7 +3,25 @@
 
 <app-description-box></app-description-box>
 
-<app-username></app-username>
+<nav>
+    <a class="button"
+       routerLink="/home"
+       routerLinkActive="activebutton"
+       ariaCurrentWhenActive="page">
+      Home
+    </a> |
+    <a class="button"
+       routerLink="/room-page"
+       routerLinkActive="activebutton"
+       ariaCurrentWhenActive="page">
+      Room
+    </a>
+    
+  </nav>
+  <router-outlet></router-outlet>
+
+
+
 <!-- <div *ngIf="userService.getUsername()">
     <p>Hello {{userService.getUsername()}}!</p>
 </div> -->
