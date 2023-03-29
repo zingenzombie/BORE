@@ -248,3 +248,44 @@ func TestGetAllMembers(t *testing.T) {
 		t.Errorf("error")
 	}
 }
+
+/*func TestUpload(t *testing.T) {
+	roomAndNames := &RoomAndNames{
+		rooms:         make(map[string]*Room),
+		connectedDevs: make(map[string]*connectedDevice),
+	}
+
+	roomAndNames.connectedDevs["1"] = &connectedDevice{room : &Room{name: "star"}}
+
+	pr, pw := io.Pipe()
+
+	writer := multipart.NewWriter(pw)
+
+	go func() {
+		defer writer.Close()
+		// We create the form data field 'fileupload'
+		// which returns another writer to write the actual file
+		_, err := writer.CreateFormFile("fileupload", "someimg.png")
+		if err != nil {
+			t.Error(err)
+		}
+
+	}()
+
+	req := httptest.NewRequest("POST", "/upload", pr)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+
+	response := httptest.NewRecorder()
+
+	uploadFile(response, roomAndNames, req)
+
+	t.Log("It should respond with an HTTP status code of 200")
+	if response.Code != 200 {
+		t.Errorf("Error")
+	}
+	t.Log("It should create a file named 'someimg.png' in uploads folder")
+	if _, err := os.Stat("./uploads/someimg.png"); os.IsNotExist(err) {
+		t.Error("Expected file ./uploads/someimg.png' to exist")
+	}
+
+}*/
