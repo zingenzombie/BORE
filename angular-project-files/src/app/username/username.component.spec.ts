@@ -1,7 +1,6 @@
 import { DebugElement } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { User } from './user';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing'
 import { UserService } from '../services/user.service';
 import { UsernameComponent } from './username.component';
