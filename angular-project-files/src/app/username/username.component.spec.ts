@@ -8,6 +8,7 @@ import { UsernameComponent } from './username.component';
 
 describe('UsernameService', () => {
   let service: UserService;
+  let component: UserService;
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
@@ -33,15 +34,17 @@ describe('UsernameService', () => {
     const username = 'John Doe';
     service.setUsername(username);
     expect(service.getUsername()).toEqual(username);
-  });
+  })
 
   it('should post the username', () => {
     const username = 'Jane Doe';
     service.postUsername(username);
-    const req = httpMock.expectOne('http://10.136.165.182:3621/setName');
+    const req = httpMock.expectOne('http://10.140.112.217:3621/setName');
     expect(req.request.method).toBe('POST');
     req.flush({});
-  });
+  })
+
+  
 });
 
 describe('UsernameComponent', () => {
@@ -84,5 +87,32 @@ describe('UsernameComponent', () => {
     component.onSubmit('John');
     expect(userService.postUsername).toHaveBeenCalledWith('John');
   });
+
+  it('should split string into a list', () => {
+    const inputString = 'apple,banana,orange';
+    const expectedList = ['apple', 'banana', 'orange'];
+
+    const result = component.getAllUsers(inputString);
+
+    expect(result).toEqual(expectedList);
+  })
+
+  it('should handle empty string', () => {
+    const inputString = '';
+    const expectedList : any = [];
+
+    const result = component.getAllUsers(inputString);
+
+    expect(result).toEqual(expectedList);
+  })
+
+  it('should handle single item string', () => {
+    const inputString = 'apple';
+    const expectedList = ['apple'];
+
+    const result = component.getAllUsers(inputString);
+
+    expect(result).toEqual(expectedList);
+  })
 });
 

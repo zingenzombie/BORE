@@ -13,15 +13,16 @@ import { DescriptionBoxComponent } from './description-box/description-box.compo
 import { HomePageComponent } from './home-page/home-page.component';
 import { SampleRoomPageComponent } from './sample-room-page/sample-room-page.component';
 import { RouterModule } from '@angular/router';
+import { Component } from '@angular/core';
 
 @NgModule({
   declarations: [
     AppComponent,
     CircleroomComponent,
     FileComponent,
-    UsernameComponent,
     DescriptionBoxComponent,
     HomePageComponent,
+    UsernameComponent,
     SampleRoomPageComponent,
   ],
   imports: [
@@ -35,7 +36,10 @@ import { RouterModule } from '@angular/router';
       {path: 'home', component: HomePageComponent}
     ]),
   ],
+  exports: [
+    DescriptionBoxComponent
+  ],
   providers: [UserService],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent, DescriptionBoxComponent]
 })
 export class AppModule { }

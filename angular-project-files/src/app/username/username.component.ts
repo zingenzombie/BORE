@@ -1,14 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgModule, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { User } from './user';
 import { UserService } from '../services/user.service';
 import { HttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-username',
   templateUrl: './username.component.html',
   styleUrls: ['./username.component.css']
 })
+
 export class UsernameComponent implements OnInit{
   name!: string;
   submitted = false;
@@ -32,6 +34,16 @@ export class UsernameComponent implements OnInit{
 
   addUser(name: string) {
     this.userList = [...this.userList, name];
+  }
+
+  // url/getAllMembers returns a string separated by commas
+  // puts users into a list
+  getAllUsers(input: string): string[] {
+    if (!input) {
+      return [];
+    }
+    const list: string[] = input.split(',');
+    return list;
   }
 }
 

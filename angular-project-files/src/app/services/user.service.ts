@@ -37,13 +37,8 @@ export class UserService {
     
   }
 
-  // postUsername(user: {username: string}) {
-  //   this.http.post(this.apiUrl, user)
-  //   .subscribe((res) => {
-  //     console.log(res);
-  //   });
-  //   //return this.http.post(this.apiUrl, this.user);
-  // }
+  
+
 
   retrieveUsername() {
     //return this.http.get<Confix>
