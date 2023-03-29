@@ -27,8 +27,7 @@ export class UsernameComponent implements OnInit{
     this.userService.setUsername(this.name);
     this.submitted = true;
     this.addUser(this.name);
-    this.userService.postUsername(name);
-    
+    this.userService.postUsername(name);    
   }
 
   addUser(name: string) {

@@ -12,7 +12,8 @@ interface UserObject {
 })
 export class UserService {
   name!: string;
-  private apiUrl = 'http://10.136.165.182:3621/setName';
+  tempName!: string;
+  private apiUrl = 'http://10.140.112.217:3621';
   //private user: UserObject = {name: this.name};
 
   constructor(private http: HttpClient) {}
@@ -27,7 +28,8 @@ export class UserService {
   
   
   postUsername(name: string) {
-    this.http.post(this.apiUrl, name, {responseType: 'json'})
+    this.tempName = this.apiUrl + '/setName';
+    this.http.post(this.tempName, name, {responseType: 'json'})
     .subscribe((res) => {
       console.log(res);
     });

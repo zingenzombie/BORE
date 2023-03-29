@@ -9,7 +9,9 @@ const routes: Routes = [];
   //imports: [RouterModule.forRoot(routes)],
 
   imports: [RouterModule.forRoot([
-    {path: 'room-page', component: SampleRoomPageComponent},
+    {path: 'room-page-1', component: SampleRoomPageComponent},
+    {path: 'room-page-2', component: SampleRoomPageComponent},
+    {path: 'room-page-3', component: SampleRoomPageComponent},
     {path: 'home', component: HomePageComponent}
   ]),],
 
