@@ -140,3 +140,30 @@ func TestCreateRoom(t *testing.T) {
 	}
 
 }
+
+func TestGetRoooms(t *testing.T) {
+	roomAndNames := &RoomAndNames{
+		rooms:         make(map[string]*Room),
+		connectedDevs: make(map[string]*connectedDevice),
+	}
+
+	roomAndNames.rooms["star"] = &Room{}
+	roomAndNames.rooms["triangle"] = &Room{}
+	roomAndNames.rooms["circle"] = &Room{}
+
+	w := httptest.NewRecorder()
+
+	printRooms(w, roomAndNames)
+
+	var requestData = allRooms{}
+	decoder := json.NewDecoder(w.Body)
+	decoder.Decode(&requestData)
+
+	expectedResponse := allRooms{Rooms: "star,triangle,circle"}
+	actualResponse := requestData
+
+	if expectedResponse != actualResponse {
+		t.Errorf("error")
+	}
+
+}
