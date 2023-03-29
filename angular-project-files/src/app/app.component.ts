@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { UserService } from './services/user.service';
+import { DescriptionBoxComponent } from './description-box/description-box.component';
 
 @Component({
   selector: 'app-root',
