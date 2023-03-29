@@ -13,6 +13,7 @@ import { DescriptionBoxComponent } from './description-box/description-box.compo
 import { HomePageComponent } from './home-page/home-page.component';
 import { SampleRoomPageComponent } from './sample-room-page/sample-room-page.component';
 import { RouterModule } from '@angular/router';
+import { FlexboxcircleroomComponent } from './flexboxcircleroom/flexboxcircleroom.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { RouterModule } from '@angular/router';
     DescriptionBoxComponent,
     HomePageComponent,
     SampleRoomPageComponent,
+    FlexboxcircleroomComponent,
   ],
   imports: [
     BrowserModule,
