@@ -141,6 +141,7 @@ func TestCreateRoom(t *testing.T) {
 
 }
 
+// tests that the names of all rooms are returned in json string
 func TestGetRoooms(t *testing.T) {
 	roomAndNames := &RoomAndNames{
 		rooms:         make(map[string]*Room),
@@ -149,7 +150,6 @@ func TestGetRoooms(t *testing.T) {
 
 	roomAndNames.rooms["star"] = &Room{}
 	roomAndNames.rooms["triangle"] = &Room{}
-	roomAndNames.rooms["circle"] = &Room{}
 
 	w := httptest.NewRecorder()
 
@@ -159,11 +159,92 @@ func TestGetRoooms(t *testing.T) {
 	decoder := json.NewDecoder(w.Body)
 	decoder.Decode(&requestData)
 
-	expectedResponse := allRooms{Rooms: "star,triangle,circle"}
+	expectedResponse1 := allRooms{Rooms: "star,triangle"}
+	expectedResponse2 := allRooms{Rooms: "triangle,star"}
+	actualResponse := requestData
+
+	if expectedResponse1 != actualResponse && expectedResponse2 != actualResponse {
+		t.Errorf("error")
+	}
+
+}
+
+// tests that name of device with ip is returned
+func TestGetName(t *testing.T) {
+	roomAndNames := &RoomAndNames{
+		rooms:         make(map[string]*Room),
+		connectedDevs: make(map[string]*connectedDevice),
+	}
+
+	roomAndNames.connectedDevs["1"] = &connectedDevice{name: "name"}
+
+	reqBody := bytes.NewBufferString(`{""}`)
+	req := httptest.NewRequest("GET", "/getName", reqBody)
+	req.RemoteAddr = "1"
+
+	w := httptest.NewRecorder()
+
+	getName(roomAndNames, req, w)
+
+	var requestData = name{}
+	decoder := json.NewDecoder(w.Body)
+	decoder.Decode(&requestData)
+
+	expectedResponse := name{Name: "name"}
 	actualResponse := requestData
 
 	if expectedResponse != actualResponse {
 		t.Errorf("error")
 	}
+}
 
+// tests that all devices in room are returned
+func TestGetRoomMembers(t *testing.T) {
+	room := Room{connectedDevs: make(map[string]*connectedDevice)}
+
+	room.connectedDevs["1"] = &connectedDevice{name: "joe"}
+	room.connectedDevs["2"] = &connectedDevice{name: "kate"}
+
+	w := httptest.NewRecorder()
+
+	printRoomUsers(w, &room)
+
+	var requestData = allRoomUsers{}
+	decoder := json.NewDecoder(w.Body)
+	decoder.Decode(&requestData)
+
+	expectedResponse1 := allRoomUsers{RoomUsers: "joe,kate"}
+	expectedResponse2 := allRoomUsers{RoomUsers: "kate,joe"}
+	actualResponse := requestData
+
+	if expectedResponse1 != actualResponse && expectedResponse2 != actualResponse {
+		t.Errorf("error")
+	}
+}
+
+// tests that all users are returned
+func TestGetAllMembers(t *testing.T) {
+	roomAndNames := &RoomAndNames{
+		rooms:         make(map[string]*Room),
+		connectedDevs: make(map[string]*connectedDevice),
+	}
+
+	roomAndNames.connectedDevs["1"] = &connectedDevice{name: "joe"}
+	roomAndNames.connectedDevs["2"] = &connectedDevice{name: "kate"}
+
+	w := httptest.NewRecorder()
+
+	printAllUsers(w, roomAndNames)
+
+	var requestData = allUsers{}
+	decoder := json.NewDecoder(w.Body)
+	decoder.Decode(&requestData)
+
+	expectedResponse1 := allUsers{Users: "joe,kate"}
+	expectedResponse2 := allUsers{Users: "kate,joe"}
+	actualResponse := requestData
+
+	if expectedResponse1 != actualResponse && expectedResponse2 != actualResponse {
+		t.Errorf("error")
+	}
 }
