@@ -3,7 +3,40 @@
 
 <app-description-box></app-description-box>
 
-<app-username></app-username>
+<div *ngIf="userService.getUsername()">
+  <p>Hello {{userService.getUsername()}}!</p>
+</div>
+
+<nav>
+    <a class="button"
+       routerLink="/home"
+       routerLinkActive="activebutton"
+       ariaCurrentWhenActive="page">
+      Home
+    </a> |
+    <a class="button"
+       routerLink="/room-page-1"
+       routerLinkActive="activebutton"
+       ariaCurrentWhenActive="page">
+      Circle Room
+    </a> |
+    <a class="button"
+       routerLink="/room-page-2"
+       routerLinkActive="activebutton"
+       ariaCurrentWhenActive="page">
+      Square Room
+    </a> |
+    <a class="button"
+       routerLink="/room-page-3"
+       routerLinkActive="activebutton"
+       ariaCurrentWhenActive="page">
+      Triangle Room
+    </a>
+  </nav>
+  <router-outlet></router-outlet>
+
+
+
 <!-- <div *ngIf="userService.getUsername()">
     <p>Hello {{userService.getUsername()}}!</p>
 </div> -->

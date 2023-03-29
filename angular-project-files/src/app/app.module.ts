@@ -10,7 +10,9 @@ import { FileComponent } from './file/file.component';
 import { UserService } from './services/user.service';
 import { UsernameComponent } from './username/username.component';
 import { DescriptionBoxComponent } from './description-box/description-box.component';
-
+import { HomePageComponent } from './home-page/home-page.component';
+import { SampleRoomPageComponent } from './sample-room-page/sample-room-page.component';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [
@@ -19,13 +21,19 @@ import { DescriptionBoxComponent } from './description-box/description-box.compo
     FileComponent,
     UsernameComponent,
     DescriptionBoxComponent,
+    HomePageComponent,
+    SampleRoomPageComponent,
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     AppRoutingModule,
     CommonModule,
-    FormsModule
+    FormsModule,
+    RouterModule.forRoot([
+      {path: 'room-page', component: SampleRoomPageComponent},
+      {path: 'home', component: HomePageComponent}
+    ]),
   ],
   providers: [UserService],
   bootstrap: [AppComponent]
