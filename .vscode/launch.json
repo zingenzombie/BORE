@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/angular-project-files/src/app/services/user.service.ts",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
+        },
+        {
+            "type": "node-terminal",
+            "name": "Run Script: ng",
+            "request": "launch",
+            "command": "npm run ng",
+            "cwd": "${workspaceFolder}/angular-project-files"
+        }
+    ]
+}

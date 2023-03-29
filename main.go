@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -17,6 +19,14 @@ func main() {
 
 	fmt.Print(GetOutboundIP())
 	fmt.Println(":3621")
+
+	os.Mkdir("temp-files", 0755)
+
+	/*
+		fmt.Println("Starting front-end...")
+
+		exec.Command("cd /BORE")
+		exec.Command("ng serve")*/
 
 	mux := http.NewServeMux()
 
@@ -53,10 +63,17 @@ func corsHandler(h http.Handler) http.Handler {
 }
 
 func makeRooms(roomAndNames *RoomAndNames) {
-	roomAndNames.rooms["star"] = &Room{make(map[string]*connectedDevice), true, ""}
-	roomAndNames.rooms["square"] = &Room{make(map[string]*connectedDevice), true, ""}
-	roomAndNames.rooms["circle"] = &Room{make(map[string]*connectedDevice), true, ""}
-	roomAndNames.rooms["triangle"] = &Room{make(map[string]*connectedDevice), true, ""}
+	roomAndNames.rooms["star"] = &Room{make(map[string]*connectedDevice), true, "", "star"}
+	os.Mkdir("temp-files/star", 0755)
+
+	roomAndNames.rooms["square"] = &Room{make(map[string]*connectedDevice), true, "", "square"}
+	os.Mkdir("temp-files/square", 0755)
+
+	roomAndNames.rooms["circle"] = &Room{make(map[string]*connectedDevice), true, "", "circle"}
+	os.Mkdir("temp-files/circle", 0755)
+
+	roomAndNames.rooms["triangle"] = &Room{make(map[string]*connectedDevice), true, "", "triangle"}
+	os.Mkdir("temp-files/triangle", 0755)
 }
 
 // Gets the device's local address, which is returned to the user.
@@ -85,6 +102,7 @@ type Room struct {
 	connectedDevs map[string]*connectedDevice
 	isPersistant  bool
 	password      string
+	name          string
 }
 
 // Structure for the series of rooms that hold users.
@@ -119,15 +137,18 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		printAllUsers(w, ct)
 	case "/createRoom":
 		createRoom(ct, r, w)
+	case "/upload":
+		uploadFile(w, ct, r)
 	}
 
 	fmt.Println("OMG HI")
 
-	if ct.connectedDevs[r.RemoteAddr].name == "" {
-		fmt.Fprintln(w, "Hello ", r.RemoteAddr)
-	} else {
-		fmt.Fprintln(w, "Hello ", ct.connectedDevs[r.RemoteAddr].name)
-	}
+	/*
+		if ct.connectedDevs[r.RemoteAddr].name == "" {
+			fmt.Fprintln(w, "Hello ", r.RemoteAddr)
+		} else {
+			fmt.Fprintln(w, "Hello ", ct.connectedDevs[r.RemoteAddr].name)
+		}*/
 }
 
 func newUser(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
@@ -184,6 +205,51 @@ type roomRequest struct {
 	Password string `json:"password"`
 }
 
+func uploadFile(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
+	fmt.Println("File Upload Endpoint Hit")
+
+	if roomAndNames.connectedDevs[r.RemoteAddr].room == nil {
+		fmt.Fprintln(w, "ERROR, user is not in a room!")
+		return
+	}
+
+	// Parse our multipart form, 10 << 20 specifies a maximum
+	// upload of 10 MB files.
+	r.ParseMultipartForm(10 << 20)
+	// FormFile returns the first file for the given key `myFile`
+	// it also returns the FileHeader so we can get the Filename,
+	// the Header and the size of the file
+	file, handler, err := r.FormFile("myFile")
+	if err != nil {
+		fmt.Println("Error Retrieving the File")
+		fmt.Println(err)
+		return
+	}
+	defer file.Close()
+	fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+	fmt.Printf("File Size: %+v\n", handler.Size)
+	fmt.Printf("MIME Header: %+v\n", handler.Header)
+
+	// Create a temporary file within our temp-images directory that follows
+	// a particular naming pattern
+	tempFile, err := ioutil.TempFile("temp-files/"+roomAndNames.connectedDevs[r.RequestURI].room.name, "upload-*.png")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer tempFile.Close()
+
+	// read all of the contents of our uploaded file into a
+	// byte array
+	fileBytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// write this byte array to our temporary file
+	tempFile.Write(fileBytes)
+	// return that we have successfully uploaded our file!
+	fmt.Fprintf(w, "Successfully Uploaded File\n")
+}
+
 // creating a new room
 func createRoom(roomAndNames *RoomAndNames, r *http.Request, w http.ResponseWriter) {
 	var requestData roomRequest
@@ -198,7 +264,9 @@ func createRoom(roomAndNames *RoomAndNames, r *http.Request, w http.ResponseWrit
 		return
 	}
 
-	roomAndNames.rooms[requestData.Name] = &Room{make(map[string]*connectedDevice), false, requestData.Password}
+	roomAndNames.rooms[requestData.Name] = &Room{make(map[string]*connectedDevice), false, requestData.Password, requestData.Name}
+
+	os.Mkdir("temp-files/"+requestData.Name, 0755)
 
 	if roomAndNames.connectedDevs[r.RemoteAddr].room != nil {
 		leaveRoom(roomAndNames.connectedDevs[r.RemoteAddr])
