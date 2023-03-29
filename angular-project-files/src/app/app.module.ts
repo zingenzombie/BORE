@@ -14,6 +14,7 @@ import { HomePageComponent } from './home-page/home-page.component';
 import { SampleRoomPageComponent } from './sample-room-page/sample-room-page.component';
 import { RouterModule } from '@angular/router';
 import { FlexboxcircleroomComponent } from './flexboxcircleroom/flexboxcircleroom.component';
+import { FlexboxtriangleroomComponent } from './flexboxtriangleroom/flexboxtriangleroom.component';
 
 @NgModule({
   declarations: [
@@ -25,6 +26,7 @@ import { FlexboxcircleroomComponent } from './flexboxcircleroom/flexboxcircleroo
     HomePageComponent,
     SampleRoomPageComponent,
     FlexboxcircleroomComponent,
+    FlexboxtriangleroomComponent,
   ],
   imports: [
     BrowserModule,
