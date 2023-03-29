@@ -14,7 +14,8 @@ export class UserService {
   name!: string;
 
   tempName!: string;
-  private apiUrl = 'http://10.140.112.217:3621';
+  ip = location.host;
+  private apiUrl = this.ip + ':3621';
   //private user: UserObject = {name: this.name};
 
   constructor(private http: HttpClient) {}

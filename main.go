@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -115,6 +116,8 @@ type RoomAndNames struct {
 // Responds to HTTP /count request.
 func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
+	r.RemoteAddr = r.RemoteAddr[:strings.IndexByte(r.RemoteAddr, ':')]
+
 	newUser(w, ct, r)
 	checkIn(ct, r)
 
@@ -141,14 +144,13 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		uploadFile(w, ct, r)
 	}
 
-	fmt.Println("OMG HI")
+	//fmt.Println("OMG HI" + ct.connectedDevs[r.RemoteAddr].name)
 
-	/*
-		if ct.connectedDevs[r.RemoteAddr].name == "" {
-			fmt.Fprintln(w, "Hello ", r.RemoteAddr)
-		} else {
-			fmt.Fprintln(w, "Hello ", ct.connectedDevs[r.RemoteAddr].name)
-		}*/
+	if ct.connectedDevs[r.RemoteAddr].name == "" {
+		fmt.Println("OMG HI", r.RemoteAddr)
+	} else {
+		fmt.Println("OMG HI", ct.connectedDevs[r.RemoteAddr].name)
+	}
 }
 
 func newUser(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
@@ -176,6 +178,8 @@ func setName(roomAndNames *RoomAndNames, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println(requestName.Name)
 
 	roomAndNames.connectedDevs[r.RemoteAddr].name = requestName.Name
 }
