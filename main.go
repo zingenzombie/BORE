@@ -236,7 +236,7 @@ func uploadFile(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Reque
 
 	// Create a temporary file within our temp-images directory that follows
 	// a particular naming pattern
-	tempFile, err := ioutil.TempFile("temp-files/"+roomAndNames.connectedDevs[r.RequestURI].room.name, "upload-*.png")
+	tempFile, err := ioutil.TempFile("temp-files/"+roomAndNames.connectedDevs[r.RemoteAddr].room.name, "upload-*.png")
 	if err != nil {
 		fmt.Println(err)
 	}
