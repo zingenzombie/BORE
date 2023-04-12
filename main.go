@@ -123,7 +123,7 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	switch r.URL.Path {
 	case "/debug":
-		debug(ct, r)
+		debug(w, ct, r)
 	case "/joinRoom":
 		joinRoom(w, ct, r)
 	case "/getRooms":
@@ -338,8 +338,21 @@ func leaveRoom(cd *connectedDevice) {
 	}
 }
 
-func debug(roomAndNames *RoomAndNames, r *http.Request) {
+func debug(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
 	fmt.Println("DEBUG TIME!!!")
+	n := name{
+		Name: "debug",
+	}
+
+	jsonBytes, err := json.Marshal(n)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	w.Write(jsonBytes)
 }
 
 // setting time of last checkin
