@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'app-circleroom',
+  selector: 'circleroom',
   templateUrl: './circleroom.component.html',
   styleUrls: ['./circleroom.component.css']
 })

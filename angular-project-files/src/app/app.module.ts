@@ -8,29 +8,25 @@ import { AppComponent } from './app.component';
 import { CircleroomComponent } from './circleroom/circleroom.component';
 import { FileComponent } from './file/file.component';
 import { UserService } from './services/user.service';
-import { UsernameComponent } from './username/username.component';
 import { DescriptionBoxComponent } from './description-box/description-box.component';
-import { HomePageComponent } from './home-page/home-page.component';
 import { SampleRoomPageComponent } from './sample-room-page/sample-room-page.component';
 import { RouterModule } from '@angular/router';
 import { FlexboxcircleroomComponent } from './flexboxcircleroom/flexboxcircleroom.component';
 import { FlexboxtriangleroomComponent } from './flexboxtriangleroom/flexboxtriangleroom.component';
 import { FlexboxsquareroomComponent } from './flexboxsquareroom/flexboxsquareroom.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
+import { SquareroomComponent } from './squareroom/squareroom.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     CircleroomComponent,
     FileComponent,
-    UsernameComponent,
-    DescriptionBoxComponent,
-    HomePageComponent,
-    SampleRoomPageComponent,
     FlexboxcircleroomComponent,
     FlexboxtriangleroomComponent,
     FlexboxsquareroomComponent,
     ToolbarComponent,
+    SquareroomComponent,
   ],
   imports: [
     BrowserModule,
@@ -39,8 +35,6 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
     CommonModule,
     FormsModule,
     RouterModule.forRoot([
-      {path: 'room-page', component: SampleRoomPageComponent},
-      {path: 'home', component: HomePageComponent}
     ]),
   ],
   providers: [UserService],
