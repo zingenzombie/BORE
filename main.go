@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -223,7 +222,7 @@ func uploadFile(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Reque
 
 	// Parse our multipart form, 10 << 20 specifies a maximum
 	// upload of 10 MB files.
-	r.ParseMultipartForm(10 << 20)
+	r.ParseMultipartForm(10000 << 20)
 	// FormFile returns the first file for the given key `myFile`
 	// it also returns the FileHeader so we can get the Filename,
 	// the Header and the size of the file
@@ -240,27 +239,59 @@ func uploadFile(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Reque
 
 	// Create a temporary file within our temp-images directory that follows
 	// a particular naming pattern
-	tempFile, err := ioutil.TempFile("temp-files/"+roomAndNames.connectedDevs[r.RemoteAddr].room.name, "upload-*.png")
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer tempFile.Close()
+	/*
+		tempFile, err := ioutil.TempFile("temp-files/"+roomAndNames.connectedDevs[r.RemoteAddr].room.name, "upload-*.png")
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer tempFile.Close()
 
-	// read all of the contents of our uploaded file into a
-	// byte array
-	fileBytes, err := ioutil.ReadAll(file)
+		// read all of the contents of our uploaded file into a
+		// byte array
+		fileBytes, err := ioutil.ReadAll(file)
+		if err != nil {
+			fmt.Println(err)
+		}
+		// write this byte array to our temporary file
+		tempFile.Write(fileBytes)
+	*/
+
+	// Create a new file in the uploads directory
+	dst, err := os.Create(fmt.Sprintf("temp-files/" + roomAndNames.connectedDevs[r.RemoteAddr].room.name + "/" + handler.Filename))
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	// write this byte array to our temporary file
-	tempFile.Write(fileBytes)
+
+	defer dst.Close()
+
+	// Copy the uploaded file to the filesystem
+	// at the specified destination
+	_, err = io.Copy(dst, file)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// return that we have successfully uploaded our file!
 	fmt.Fprintf(w, "Successfully Uploaded File\n")
 }
 
 func downloadFile(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
 
-	fileName := "temp-files/" + roomAndNames.connectedDevs[r.RemoteAddr].room.name + "/upload-3889608658.png"
+	if roomAndNames.connectedDevs[r.RemoteAddr].room == nil {
+		fmt.Fprintln(w, "ERROR, user is not in a room!")
+		return
+	}
+
+	var fileString name
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&fileString)
+	if err != nil {
+		panic(err)
+	}
+
+	fileName := "temp-files/" + roomAndNames.connectedDevs[r.RemoteAddr].room.name + "/" + fileString.Name
 
 	// For more advance authentication, see
 	// https://www.socketloop.com/tutorials/golang-simple-client-server-hmac-authentication-without-ssl-example
