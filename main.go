@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -142,6 +143,8 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		createRoom(ct, r, w)
 	case "/upload":
 		uploadFile(w, ct, r)
+	case "/download":
+		downloadFile(w, ct, r)
 	}
 
 	//fmt.Println("OMG HI" + ct.connectedDevs[r.RemoteAddr].name)
@@ -219,7 +222,7 @@ func uploadFile(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Reque
 
 	// Parse our multipart form, 10 << 20 specifies a maximum
 	// upload of 10 MB files.
-	r.ParseMultipartForm(10 << 20)
+	r.ParseMultipartForm(10000 << 20)
 	// FormFile returns the first file for the given key `myFile`
 	// it also returns the FileHeader so we can get the Filename,
 	// the Header and the size of the file
@@ -236,22 +239,101 @@ func uploadFile(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Reque
 
 	// Create a temporary file within our temp-images directory that follows
 	// a particular naming pattern
-	tempFile, err := ioutil.TempFile("temp-files/"+roomAndNames.connectedDevs[r.RemoteAddr].room.name, "upload-*.png")
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer tempFile.Close()
+	/*
+		tempFile, err := ioutil.TempFile("temp-files/"+roomAndNames.connectedDevs[r.RemoteAddr].room.name, "upload-*.png")
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer tempFile.Close()
 
-	// read all of the contents of our uploaded file into a
-	// byte array
-	fileBytes, err := ioutil.ReadAll(file)
+		// read all of the contents of our uploaded file into a
+		// byte array
+		fileBytes, err := ioutil.ReadAll(file)
+		if err != nil {
+			fmt.Println(err)
+		}
+		// write this byte array to our temporary file
+		tempFile.Write(fileBytes)
+	*/
+
+	// Create a new file in the uploads directory
+	dst, err := os.Create(fmt.Sprintf("temp-files/" + roomAndNames.connectedDevs[r.RemoteAddr].room.name + "/" + handler.Filename))
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	// write this byte array to our temporary file
-	tempFile.Write(fileBytes)
+
+	defer dst.Close()
+
+	// Copy the uploaded file to the filesystem
+	// at the specified destination
+	_, err = io.Copy(dst, file)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// return that we have successfully uploaded our file!
 	fmt.Fprintf(w, "Successfully Uploaded File\n")
+}
+
+func downloadFile(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
+
+	if roomAndNames.connectedDevs[r.RemoteAddr].room == nil {
+		fmt.Fprintln(w, "ERROR, user is not in a room!")
+		return
+	}
+
+	var fileString name
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&fileString)
+	if err != nil {
+		panic(err)
+	}
+
+	fileName := "temp-files/" + roomAndNames.connectedDevs[r.RemoteAddr].room.name + "/" + fileString.Name
+
+	// For more advance authentication, see
+	// https://www.socketloop.com/tutorials/golang-simple-client-server-hmac-authentication-without-ssl-example
+
+	// get client ip address
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+
+	log.Println("Transmiting to client at " + ip + " : " + fileName)
+
+	// Do we have the update with the given filename?
+
+	updateFile, err := os.Open(fileName)
+
+	defer updateFile.Close()
+
+	if err != nil {
+		// return 404 HTTP response code for File not found
+		http.Error(w, "Update file not found.", 404)
+		return
+	}
+
+	// Prepare the update file to be sent over to the client(which in this case is an APP)
+
+	fileHeader := make([]byte, 512)                // 512 bytes is sufficient for http.DetectContentType() to work
+	updateFile.Read(fileHeader)                    // read the first 512 bytes from the updateFile
+	fileType := http.DetectContentType(fileHeader) // set the type
+
+	fileInfo, _ := updateFile.Stat()
+	fileSize := fileInfo.Size()
+
+	//Transmit the headers
+	w.Header().Set("Expires", "0")
+	w.Header().Set("Content-Transfer-Encoding", "binary")
+	w.Header().Set("Content-Control", "private, no-transform, no-store, must-revalidate")
+	w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
+	w.Header().Set("Content-Type", fileType)
+	w.Header().Set("Content-Length", strconv.FormatInt(fileSize, 10))
+
+	//Send the file
+	updateFile.Seek(0, 0)  // reset back to position since we've read first 512 bytes of data previously
+	io.Copy(w, updateFile) // transmit the updatefile bytes to the client
+	return
 }
 
 // creating a new room
