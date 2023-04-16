@@ -1,1 +1,15 @@
-<p>sample-room-page works!</p>
+<br>
+<form #usersForm="ngForm" (ngSubmit)="onSubmit(usersForm.value)">
+    <label class="text">
+        Enter password:
+        <input type="password" [(ngModel)]="password" name="pass" required>
+    </label>
+    <button class="button" type="submit">Submit</button>
+</form>
+<div class="incorrect" *ngIf="incorrect">
+    Incorrect password
+</div>
+<div class="correct" *ngIf="correct">
+    Access being granted...
+</div>
+
