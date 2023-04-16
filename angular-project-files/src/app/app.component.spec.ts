@@ -80,9 +80,9 @@ describe('AppComponent', () => {
     const room3Link = fixture.debugElement.query(By.css('a[href="/room-page-3"]')).nativeElement;
 
     expect(homeLink.textContent).toContain('Home');
-    expect(room1Link.textContent).toContain('Circle Room');
-    expect(room2Link.textContent).toContain('Square Room');
-    expect(room3Link.textContent).toContain('Triangle Room');
+    expect(room1Link.textContent).toContain('Private Room: Circle');
+    expect(room2Link.textContent).toContain('Private Room: Square');
+    expect(room3Link.textContent).toContain('Private Room: Triangle');
   });
 
   it('should contain a link to Circle Room page', () => {

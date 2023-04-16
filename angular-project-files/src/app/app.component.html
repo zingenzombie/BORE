@@ -1,40 +1,36 @@
 <div class="title">{{title}}</div>
 <div class="subTitle">{{subTitle}}</div>
 
+<br>
 <app-description-box></app-description-box>
+<br>
 
-<div *ngIf="userService.getUsername()">
+<!-- debug code -->
+<!-- <div class="address-user" *ngIf="userService.getDebug()">
+  <p>Hello {{userService.getDebug()}}!</p>
+</div> -->
+
+
+<!-- Code here has working /getName request -->
+<div class="address-user" *ngIf="userService.getUsername()">
   <p>Hello {{userService.getUsername()}}!</p>
 </div>
 
 <nav>
-    <a class="button"
-       routerLink="/home"
-       routerLinkActive="activebutton"
-       ariaCurrentWhenActive="page">
-      Home
-    </a> |
-    <a class="button"
-       routerLink="/room-page-1"
-       routerLinkActive="activebutton"
-       ariaCurrentWhenActive="page">
-      Circle Room
-    </a> |
-    <a class="button"
-       routerLink="/room-page-2"
-       routerLinkActive="activebutton"
-       ariaCurrentWhenActive="page">
-      Square Room
-    </a> |
-    <a class="button"
-       routerLink="/room-page-3"
-       routerLinkActive="activebutton"
-       ariaCurrentWhenActive="page">
-      Triangle Room
-    </a>
-  </nav>
-  <router-outlet></router-outlet>
-
+  <a class="button" routerLink="/home" routerLinkActive="activebutton" ariaCurrentWhenActive="page">
+    Home
+  </a> |
+  <a class="button" routerLink="/room-page-1" routerLinkActive="activebutton" ariaCurrentWhenActive="page">
+    Private Room: Circle
+  </a> |
+  <a class="button" routerLink="/room-page-2" routerLinkActive="activebutton" ariaCurrentWhenActive="page">
+    Private Room: Square
+  </a> |
+  <a class="button" routerLink="/room-page-3" routerLinkActive="activebutton" ariaCurrentWhenActive="page">
+    Private Room: Triangle
+  </a>
+</nav>
+<router-outlet></router-outlet>
 
 
 <!-- <div *ngIf="userService.getUsername()">
