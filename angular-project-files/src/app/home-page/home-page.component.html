@@ -1,1 +1,24 @@
 <app-username></app-username>
+<br>
+<h1 class="header1">File Sharing Rooms</h1>
+<br>
+<h2 class="header2">Enter Files Here</h2>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body style="text-align: center;">
+    <form
+      enctype="multipart/form-data"
+      action="http://localhost:3621/upload"
+      method="post"
+    >
+      <input class="text" type="file" name="myFile" />
+      <input class="button" type="submit" value="upload" />
+    </form>
+  </body>
+</html>
