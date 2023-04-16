@@ -32,13 +32,13 @@ describe('UsernameService', () => {
   it('should set and get the username', () => {
     const username = 'John Doe';
     service.setUsername(username);
-    expect(service.getUsername()).toEqual(username);
+    expect(service.returnUsername()).toEqual(username);
   })
 
   it('should post the username', () => {
     const username = 'Jane Doe';
     service.postUsername(username);
-    const req = httpMock.expectOne('http://10.140.112.217:3621/setName');
+    const req = httpMock.expectOne('http://localhost:3621/setName');
     expect(req.request.method).toBe('POST');
     req.flush({});
   })
@@ -77,13 +77,13 @@ describe('UsernameComponent', () => {
   });
 
   it('should set the submitted flag to true', () => {
-    component.onSubmit('John');
+    component.submitHelper('John');
     expect(component.submitted).toBeTrue();
   });
   
   it('should call the postUsername method of the UserService', () => {
     spyOn(userService, 'postUsername');
-    component.onSubmit('John');
+    component.submitHelper('John');
     expect(userService.postUsername).toHaveBeenCalledWith('John');
   });
 

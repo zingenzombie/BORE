@@ -12,13 +12,23 @@
     <title>Document</title>
   </head>
   <body style="text-align: center;">
-    <form
+    <form id="testForm"
       enctype="multipart/form-data"
       action="http://localhost:3621/upload"
       method="post"
+      (submit)="onUpload($event)"
     >
       <input class="text" type="file" name="myFile" />
       <input class="button" type="submit" value="upload" />
     </form>
+    <br>
+    <span class="file-text">Number of files uploaded: {{ numFilesUploaded }}</span>
+    <br>
+    <br>
+    <h2 class="text">Uploaded Files:</h2>
+    <br>
+    <div>
+      <li class="file-text-display" *ngFor="let file of fileList">{{ file }}</li>
+    </div>
   </body>
 </html>

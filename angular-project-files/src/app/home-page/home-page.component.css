@@ -48,7 +48,27 @@
     font-weight: bold;
 }
 
+.file-text {
+    text-align: center;
+    margin: auto;
+    width: 50%;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+.file-text-display {
+    text-align: center;
+    margin: auto;
+    width: 50%;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
+    list-style: none;
+}
+
 form input {
-    margin-right: -20px;
-    margin-left: -50px;
+    margin-right: -55px;
+    margin-left: -100px;
 }

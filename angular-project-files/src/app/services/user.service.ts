@@ -30,15 +30,15 @@ export class UserService {
     this.name = name;
   }
 
+  returnUsername() {
+    return this.name;
+  }
+
   ngOnInit() {
     
   }
 
   updateUsername(): string {
-    return this.returnUsername();
-  }
-
-  returnUsername(): string {
     const str = this.getUsername();
     const word = this.extractWord(str);
     return word;

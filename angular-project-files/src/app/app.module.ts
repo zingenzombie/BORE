@@ -37,7 +37,6 @@ import { Component } from '@angular/core';
     ]),
   ],
   exports: [
-    DescriptionBoxComponent
   ],
   providers: [UserService],
   bootstrap: [AppComponent, DescriptionBoxComponent]
