@@ -14,6 +14,8 @@ import { CommonModule } from '@angular/common';
 export class UsernameComponent implements OnInit{
   name!: string;
   submitted = false;
+  username!: string;
+  showUsers = false;
 
   userList: string[] = [];
   
@@ -24,12 +26,19 @@ export class UsernameComponent implements OnInit{
     
   }
 
+  toggleUsers() {
+    this.showUsers = !this.showUsers;
+  }
+
   onSubmit(name: string) {
     console.log(name);
     this.userService.setUsername(this.name);
     this.submitted = true;
     this.addUser(this.name);
-    this.userService.postUsername(name);    
+    this.userService.postUsername(name);   
+    this.username = this.name;
+    //get username
+    this.userService.updateUsername();
   }
 
   addUser(name: string) {
@@ -45,5 +54,8 @@ export class UsernameComponent implements OnInit{
     const list: string[] = input.split(',');
     return list;
   }
+
+  
+
 }
 
