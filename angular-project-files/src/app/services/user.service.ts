@@ -66,27 +66,43 @@ export class UserService {
   //     })
   //   );
   // }
-  getUsername(): string {
+  getDebugAsString(): string {
     this.tempName = this.apiUrl + '/debug';
     this.http.get(this.tempName).pipe(
       map(data => JSON.stringify(data))
     )
     .subscribe(result => {
       this.tempString = result;
-      console.log(this.tempString); // Prints the converted string to the console
+      console.log(this.tempString); 
     });
     return this.tempString;
   }
   
-  getUsername1(): string {
+  getDebug(): string {
     this.tempName = this.apiUrl + '/debug';
-    this.http.get<Name>(this.tempName).pipe(
+    this.http.get(this.tempName).pipe(
       map(data => (data))
     )
     .subscribe(result => {
-      this.debugString = result;
-      this.tempString1 = JSON.stringify(result.Name);
-      console.log(this.tempString1); // Prints the converted string to the console
+      this.tempString1 = JSON.stringify(result);
+      const tempObject = JSON.parse(this.tempString1);
+      this.tempString1 = tempObject.name;
+      console.log(this.tempString1); 
+    });
+
+    return this.tempString1;
+  }
+
+  getUsername(): string {
+    this.tempName = this.apiUrl + '/getName';
+    this.http.get(this.tempName).pipe(
+      map(data => (data))
+    )
+    .subscribe(result => {
+      this.tempString1 = JSON.stringify(result);
+      const tempObject = JSON.parse(this.tempString1);
+      this.tempString1 = tempObject.name;
+      console.log(this.tempString1); 
     });
 
     return this.tempString1;
