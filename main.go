@@ -129,6 +129,8 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		joinRoom(w, ct, r)
 	case "/getRooms":
 		printRooms(w, ct)
+	case "/getRoom":
+		getRoom(w, r, ct)
 	case "/setName":
 		setName(ct, r)
 	case "/getName":
@@ -584,4 +586,27 @@ func printRoomUsers(w http.ResponseWriter, room *Room) {
 	w.Header().Set("Content-Type", "application/json")
 
 	w.Write(jsonBytes)
+}
+
+// getRoom returns the string name of the room that the user is in
+type room struct {
+	Room string `json:"room"`
+}
+
+func getRoom(w http.ResponseWriter, r *http.Request, roomAndNames *RoomAndNames) {
+	if roomAndNames.connectedDevs[r.RemoteAddr].room != nil {
+		r := room{
+			Room: roomAndNames.connectedDevs[r.RemoteAddr].room.name,
+		}
+
+		jsonBytes, err := json.Marshal(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		w.Write(jsonBytes)
+	}
 }
