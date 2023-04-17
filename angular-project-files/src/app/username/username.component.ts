@@ -32,7 +32,8 @@ export class UsernameComponent implements OnInit{
 
   onSubmit(name: string) {
     console.log(name);
-    this.submitHelper(name);
+    this.userService.postUsername(name);
+    this.submitted = true;
     this.userService.setUsername(this.name);
     
     this.addUser(this.name);
@@ -43,8 +44,7 @@ export class UsernameComponent implements OnInit{
   }
 
   submitHelper(name: string) {
-    this.userService.postUsername(name);
-    this.submitted = true;
+    
   }
 
   addUser(name: string) {
