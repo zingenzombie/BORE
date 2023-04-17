@@ -249,6 +249,38 @@ func TestGetAllMembers(t *testing.T) {
 	}
 }
 
+func TestGetRoom(t *testing.T) {
+	roomAndNames := &RoomAndNames{
+		rooms:         make(map[string]*Room),
+		connectedDevs: make(map[string]*connectedDevice),
+	}
+
+	r := Room{
+		name: "Triangle",
+	}
+	roomAndNames.connectedDevs["1"] = &connectedDevice{}
+	roomAndNames.connectedDevs["1"].room = &r
+
+	reqBody := bytes.NewBufferString(`{""}`)
+	req := httptest.NewRequest("GET", "/getRoom", reqBody)
+	req.RemoteAddr = "1"
+
+	w := httptest.NewRecorder()
+
+	getRoom(w, req, roomAndNames)
+
+	var requestData = room{}
+	decoder := json.NewDecoder(w.Body)
+	decoder.Decode(&requestData)
+
+	expectedResponse := room{Room: "Triangle"}
+	actualResponse := requestData
+
+	if expectedResponse != actualResponse {
+		t.Errorf("error")
+	}
+}
+
 /*func TestUpload(t *testing.T) {
 	roomAndNames := &RoomAndNames{
 		rooms:         make(map[string]*Room),
