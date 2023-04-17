@@ -28,7 +28,10 @@
     <h2 class="text">Uploaded Files:</h2>
     <br>
     <div>
-      <li class="file-text-display" *ngFor="let file of fileList">{{ file }}</li>
+      <li *ngFor="let file of fileList">
+        <span class="file-text-display">{{ file.name }}</span>
+        <span class="file-text"> - {{ file.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
+      </li>
     </div>
   </body>
 </html>

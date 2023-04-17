@@ -12,15 +12,18 @@ import { CommonModule } from '@angular/common';
 
 export class HomePageComponent {
   numFilesUploaded = 0;
-  fileList: string[] = [];
+  fileList: any[] = [];
 
   onUpload(event: any) {
     this.numFilesUploaded++;
     const fileInput = event.target.querySelector('input[type="file"]');
+    const uploadTime = new Date();
     const files = fileInput.files;
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      this.fileList.push(file.name);
+      this.fileList.push({name: file.name, time: uploadTime});
     }
   }
+
+  
 }
