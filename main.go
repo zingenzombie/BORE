@@ -121,7 +121,6 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	r.RemoteAddr = r.RemoteAddr[:strings.IndexByte(r.RemoteAddr, ':')]
 
 	newUser(w, ct, r)
-	checkIn(w, ct, r)
 
 	switch r.URL.Path {
 	case "/debug":
@@ -438,48 +437,11 @@ func debug(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
 	w.Write(jsonBytes)
 }
 
-/*
-type allUsers struct {
-	Users string `json:"users"`
-}
-
-func printAllUsers(w http.ResponseWriter, roomAndNames *RoomAndNames) {
-	delimiter := ","
-	a := allUsers{
-		Users: "",
-	}
-
-	count := 0
-	for key, element := range roomAndNames.connectedDevs {
-		count++
-		if element.name != "" {
-			a.Users += element.name
-		} else {
-			a.Users += key
-		}
-
-		if count != len(roomAndNames.connectedDevs) {
-			a.Users += delimiter
-		}
-	}
-
-	jsonBytes, err := json.Marshal(a)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-
-	w.Write(jsonBytes)
-
-}
-*/
-
 type roomFiles struct {
-	Room  string `json:"room"`
-	Users string `json:"users"`
-	Files string `json:"files"`
+	Username    string `json:"username"`
+	Room        string `json:"room"`
+	UsersInRoom string `json:"usersInRoom"`
+	Files       string `json:"files"`
 }
 
 // setting time of last checkin
@@ -488,17 +450,41 @@ func checkIn(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request)
 	roomAndNames.connectedDevs[r.RemoteAddr].lastCheckIn = time.Now().UTC()
 	roomAndNames.connectedDevs[r.RemoteAddr].active = true
 
+	//Creates the return json object.
+	a := roomFiles{
+		//delimiter := ","
+		Files: "",
+	}
+
+	//Adds the username to the object.
+	if roomAndNames.connectedDevs[r.RemoteAddr].name == "" {
+		a.Username = r.RemoteAddr
+	} else {
+		a.Username = roomAndNames.connectedDevs[r.RemoteAddr].name
+	}
+
 	if roomAndNames.connectedDevs[r.RemoteAddr].room == nil {
 		fmt.Println("User at " + r.RemoteAddr + " is not in a room.")
 		return
 	}
 
-	//delimiter := ","
-	a := roomFiles{
-		Files: "",
-	}
+	//Adds the user's room to the object.
+	a.Room = roomAndNames.connectedDevs[r.RemoteAddr].room.name
 
 	count := 0
+	for key, element := range roomAndNames.connectedDevs[r.RemoteAddr].room.connectedDevs {
+		fmt.Println("Key:", key, "=>", "Element:", element)
+
+		count++
+
+		a.UsersInRoom += element.name + ","
+	}
+
+	if last := len(a.UsersInRoom) - 1; last >= 0 && a.UsersInRoom[last] == ',' {
+		a.UsersInRoom = a.UsersInRoom[:last]
+	}
+
+	count = 0
 	first := true
 	err := filepath.Walk("temp-files/"+roomAndNames.connectedDevs[r.RemoteAddr].room.name, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -508,6 +494,10 @@ func checkIn(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request)
 
 		if first {
 			first = false
+			return nil
+		}
+
+		if info.Name() == ".DS_Store" {
 			return nil
 		}
 
