@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -120,7 +121,6 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	r.RemoteAddr = r.RemoteAddr[:strings.IndexByte(r.RemoteAddr, ':')]
 
 	newUser(w, ct, r)
-	checkIn(ct, r)
 
 	switch r.URL.Path {
 	case "/debug":
@@ -136,7 +136,7 @@ func (ct *RoomAndNames) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "/getName":
 		getName(ct, r, w)
 	case "/checkIn":
-		checkIn(ct, r)
+		checkIn(w, ct, r)
 	case "/getRoomMembers":
 		printRoomUsers(w, ct.connectedDevs[r.RemoteAddr].room)
 	case "/getAllMembers":
@@ -439,11 +439,97 @@ func debug(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
 	w.Write(jsonBytes)
 }
 
+type roomFiles struct {
+	Username    string `json:"username"`
+	Room        string `json:"room"`
+	UsersInRoom string `json:"usersInRoom"`
+	Files       string `json:"files"`
+}
+
 // setting time of last checkin
-func checkIn(roomAndNames *RoomAndNames, r *http.Request) {
+func checkIn(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request) {
 	fmt.Println(r.RemoteAddr, " checked in.")
 	roomAndNames.connectedDevs[r.RemoteAddr].lastCheckIn = time.Now().UTC()
 	roomAndNames.connectedDevs[r.RemoteAddr].active = true
+
+	//Creates the return json object.
+	a := roomFiles{
+		//delimiter := ","
+		Files: "",
+	}
+
+	//Adds the username to the object.
+	if roomAndNames.connectedDevs[r.RemoteAddr].name == "" {
+		a.Username = r.RemoteAddr
+	} else {
+		a.Username = roomAndNames.connectedDevs[r.RemoteAddr].name
+	}
+
+	if roomAndNames.connectedDevs[r.RemoteAddr].room == nil {
+		fmt.Println("User at " + r.RemoteAddr + " is not in a room.")
+		return
+	}
+
+	//Adds the user's room to the object.
+	a.Room = roomAndNames.connectedDevs[r.RemoteAddr].room.name
+
+	count := 0
+	for key, element := range roomAndNames.connectedDevs[r.RemoteAddr].room.connectedDevs {
+		fmt.Println("Key:", key, "=>", "Element:", element)
+
+		count++
+
+		a.UsersInRoom += element.name + ","
+	}
+
+	if last := len(a.UsersInRoom) - 1; last >= 0 && a.UsersInRoom[last] == ',' {
+		a.UsersInRoom = a.UsersInRoom[:last]
+	}
+
+	count = 0
+	first := true
+	err := filepath.Walk("temp-files/"+roomAndNames.connectedDevs[r.RemoteAddr].room.name, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+
+		if first {
+			first = false
+			return nil
+		}
+
+		if info.Name() == ".DS_Store" {
+			return nil
+		}
+
+		fmt.Println(path)
+		fmt.Println(info.Name())
+
+		count++
+
+		a.Files += info.Name() + ","
+
+		return nil
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	if last := len(a.Files) - 1; last >= 0 && a.Files[last] == ',' {
+		a.Files = a.Files[:last]
+	}
+
+	jsonBytes, err := json.Marshal(a)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	w.Write(jsonBytes)
+
 }
 
 // looping through connected devices
