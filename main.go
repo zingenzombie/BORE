@@ -467,6 +467,17 @@ func checkIn(w http.ResponseWriter, roomAndNames *RoomAndNames, r *http.Request)
 
 	if roomAndNames.connectedDevs[r.RemoteAddr].room == nil {
 		fmt.Println("User at " + r.RemoteAddr + " is not in a room.")
+
+		jsonBytes, err := json.Marshal(a)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		w.Write(jsonBytes)
+
 		return
 	}
 

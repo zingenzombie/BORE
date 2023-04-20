@@ -83,7 +83,14 @@ Backend Documentation
 
 {“name”:“NAMEHERE”}
 
-/checkIn - This should be called once a second and resets the user's activity counter so they are not removed for inactivity. In addition, it returns data about BORE (how many rooms there are, who is in them, and what file requests may be available).
+/checkIn - This should be called once a second and resets the user's activity counter so they are not removed for inactivity. In addition, it returns data about the user (what room they are in, who else is in it, their username, and what files are available.).
+
+{
+    "username": "",
+    "room": "",
+    "usersInRoom": "",
+    "files": ""
+}
 
 /getRoomMembers - Returns all usernames in the user’s room. {“roomUsers”:“USER1,USER2,...”}
 
